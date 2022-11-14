@@ -1,12 +1,13 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "compiler.h"
 #include "debug.h"
 #include "vm.h"
 
 VM vm;
 
-void resetStack()
+static void resetStack()
 {
 	vm.stackTop = vm.stack;
 }
@@ -33,7 +34,7 @@ Value pop()
 	return *vm.stackTop;
 }
 
-InterpretResult run()
+static InterpretResult run()
 {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
@@ -81,9 +82,8 @@ InterpretResult run()
 #undef BINARY_OP
 }
 
-InterpretResult interpret(Chunk *chunk)
+InterpretResult interpret(const char *source)
 {
-	vm.chunk = chunk;
-	vm.ip = vm.chunk->code;
-	return run();
+	compile(source);
+	return INTERPRET_OK;
 }
