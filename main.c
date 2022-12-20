@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <readline/readline.h>
+
 #include "common.h"
 #include "chunk.h"
 #include "debug.h"
