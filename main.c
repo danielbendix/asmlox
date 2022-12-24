@@ -11,16 +11,27 @@
 
 static void repl()
 {
-    char line[1024];
+    char *prev = NULL;
     for (;;) {
-        printf("> ");
+        char *line = readline("> ");
 
-        if (!fgets(line, sizeof(line), stdin)) {
+        if (line == NULL) {
             printf("\n");
             break;
         }
 
         interpret(line);
+
+        if (prev == NULL) {
+            add_history(line);
+            prev = line;
+        } else {
+            if (strcmp(line, prev) != 0) {
+                add_history(line);
+            }
+            free(prev);
+            prev = line;
+        }
     }
 }
 
