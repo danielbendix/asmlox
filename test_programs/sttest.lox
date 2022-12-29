@@ -1,0 +1,14 @@
+
+fun fail() {
+    "" + 1;
+}
+
+fun test(n) {
+    if (n > 0) {
+        test(n - 1);
+    } else {
+        fail();
+    }
+}
+
+test(10);
