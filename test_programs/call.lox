@@ -1,0 +1,12 @@
+fun function() {
+    return 1 + 2 + 3 + 4 + 5 + 6;
+}
+{
+    var start = clock();
+    var n = 0;
+    for (var i = 0; i < 10000000; i = i + 1) {
+        n = n + function();
+    }
+    print n;
+    print clock() - start;
+}

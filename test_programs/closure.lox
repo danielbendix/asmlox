@@ -1,0 +1,16 @@
+fun outer() {
+    var s = "outside";
+    var t = "test";
+    fun midder() {
+        fun inner() {
+            s = "inside";
+            t = "train";
+        }
+        inner();
+    }
+    midder();
+    print s;
+    print t;
+}
+
+outer();

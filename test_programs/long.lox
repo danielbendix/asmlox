@@ -1,0 +1,12 @@
+{
+    var start = clock();
+    var n = 0;
+    for (var i = 0; i < 100000; i = i + 1) {
+        for (var j = 0; j < i; j = j + 1) {
+            n = n + j;
+        }
+    }
+
+    print clock() - start;
+    print n;
+}
