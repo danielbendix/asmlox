@@ -98,6 +98,7 @@ static void skipWhitespace()
                 } else {
                     return;
                 }
+                break;
             default:
                 return;
         }
@@ -213,5 +214,6 @@ Token scanToken()
         case '"': return string();
     }
 
+    printf("%c = %d %d %d\n", c, c, '\n', '\r');
     return errorToken("Unexpected character.");
 }
