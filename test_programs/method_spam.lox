@@ -1,0 +1,15 @@
+class Test {
+    method() {
+        return 1;
+    }
+}
+
+var object = Test();
+var start = clock();
+var sum = 0;
+for (var i = 0; i < 10000000; i = i + 1) {
+    sum = sum + object.method();
+}
+
+print clock() - start;
+print sum;
