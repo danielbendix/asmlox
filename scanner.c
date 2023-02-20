@@ -214,6 +214,5 @@ Token scanToken()
         case '"': return string();
     }
 
-    printf("%c = %d %d %d\n", c, c, '\n', '\r');
     return errorToken("Unexpected character.");
 }
