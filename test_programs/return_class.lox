@@ -1,0 +1,26 @@
+fun create_class() {
+
+    var a = 0;
+
+    class Test {
+        init() {
+            this.a = a;
+            a = a + 1;
+        }
+    }
+
+    return Test;
+}
+
+var class1 = create_class();
+var class2 = create_class();
+
+var instance1 = class2();
+var instance2 = class2();
+
+print class1;
+print class2;
+print class1 == class1;
+print class1 == class2;
+print instance1.a;
+print instance2.a;
