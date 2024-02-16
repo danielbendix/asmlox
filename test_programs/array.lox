@@ -1,0 +1,14 @@
+fun sum(array) {
+    var l = length(array);
+    sum = 0;
+    for (var i = 0; i < length(array); i = i + 1) {
+        sum = sum + array[i];
+    }
+    return sum;
+}
+
+var a = [];
+for (var i = 0; i < 1000000; i = i + 4) {
+    push(a, i, i + 1, i + 2, i + 3);
+}
+print sum(a);

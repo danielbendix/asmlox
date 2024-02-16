@@ -1,0 +1,5 @@
+print "a";
+print nil;
+print 123.456;
+print true;
+print false;

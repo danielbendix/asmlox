@@ -1,0 +1,25 @@
+class map {
+    
+    init(f, array) {
+        this.f = f;
+        this.array = array;
+    }
+
+    __get__(index) {
+        return this.f(this.array[index]);
+    }
+}
+
+var array = [];
+
+for (var i = 0; i < 1000; i = i + 1) {
+    push(array, i);
+}
+
+fun square(x) { return x * x; }
+
+var squared = map(square, array);
+
+for (var i = 0; i < 1000; i = i + 1) {
+    print(squared[i]);
+}

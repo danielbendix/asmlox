@@ -7,6 +7,12 @@
 #include "memory.h"
 #include "scanner.h"
 
+#include "ops.h"
+#include "native/generate.h"
+
+// Temporary solution to making code executable
+#include <sys/mman.h>
+
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
 #endif
@@ -63,6 +69,8 @@ typedef struct Compiler {
     ObjFunction *function;
     FunctionType type;
 
+    Local arguments[UINT8_COUNT];
+    int argumentCount;
     Local locals[UINT8_COUNT];
     int localCount;
     Upvalue upvalues[UINT8_COUNT];
@@ -84,6 +92,8 @@ static Chunk *currentChunk()
 {
     return &current->function->chunk;
 }
+
+#define CURRENT currentChunk(), parser.previous.line
 
 static void errorAt(Token *token, const char *message)
 {
@@ -149,11 +159,15 @@ static bool match(TokenType type)
 
 static void emitByte(uint8_t byte)
 {
+    int *n = NULL;
+    *n = 1;
     writeChunk(currentChunk(), byte, parser.previous.line);
 }
 
 static void emitBytes(uint8_t byte1, uint8_t byte2)
 {
+    int *n = NULL;
+    *n = 1;
     emitByte(byte1);
     emitByte(byte2);
 }
@@ -175,18 +189,24 @@ static int emitJump(uint8_t instruction)
     emitByte(0xFF);
     emitByte(0xFF);
     return currentChunk()->count - 2;
-
 }
 
-static void emitReturn()
+static void emitReturn_()
 {
     if (current->type == TYPE_INITIALIZER) {
-        emitBytes(OP_GET_LOCAL, 0);
+        emitGetArgument(CURRENT, current->argumentCount, 0);
+        //emitBytes(OP_GET_LOCAL, 0);
     } else {
-        emitByte(OP_NIL);
+        //emitByte(OP_NIL);
     }
 
-    emitByte(OP_RETURN);
+    if (current->type == TYPE_SCRIPT) {
+        emitReturnFromScript(CURRENT);
+    } else if (current->type == TYPE_INITIALIZER) {
+        emitReturn(CURRENT, LOX_OP_RETURN_INITIALIZER);
+    } else {
+        emitReturn(CURRENT, LOX_OP_RETURN);
+    }
 }
 
 static uint8_t makeConstant(Value value)
@@ -202,7 +222,7 @@ static uint8_t makeConstant(Value value)
 
 static void emitConstant(Value value)
 {
-    emitBytes(OP_CONSTANT, makeConstant(value));
+    emitGetConstant(CURRENT, makeConstant(value));
 }
 
 static void patchJump(int offset)
@@ -223,6 +243,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     compiler->enclosing = current;
     compiler->function = NULL;
     compiler->type = type;
+    compiler->argumentCount = 0;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->function = newFunction();
@@ -231,7 +252,8 @@ static void initCompiler(Compiler *compiler, FunctionType type)
         current->function->name = copyString(parser.previous.start, parser.previous.length);
     }
 
-    Local *local = &current->locals[current->localCount++];
+    // We may need to do something about this.
+    Local *local = &current->arguments[current->argumentCount++];
     local->depth = 0;
     local->isCaptured = false;
     if (type != TYPE_FUNCTION) {
@@ -245,7 +267,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
 
 static ObjFunction *endCompiler()
 {
-    emitReturn();
+    emitReturn_();
     ObjFunction *function = current->function;
 
 #ifdef DEBUG_PRINT_CODE
@@ -253,6 +275,20 @@ static ObjFunction *endCompiler()
         disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : "<script>");
     }
 #endif
+
+    // Kludge start
+    void *space = mmap(NULL, sizeof(uint32_t) * function->chunk.count, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+    FILE *f = fopen("test.o", "wb");
+
+    fwrite(function->chunk.code, sizeof(uint32_t), function->chunk.count, f);
+    fclose(f);
+
+    memcpy(space, function->chunk.code, sizeof(uint32_t) * function->chunk.count);
+    reallocate(function->chunk.code, sizeof(uint32_t) * function->chunk.capacity, 0);
+    mprotect(space, sizeof(uint32_t) * function->chunk.count, PROT_EXEC);
+    function->chunk.code = space;
+    // Kludge end
 
     current = current->enclosing;
     return function;
@@ -267,6 +303,8 @@ static void endScope()
 {
     current->scopeDepth--;
 
+    // TODO: For a scope, we could figure out the up value indices, and inject instructions to close them by index,
+    // and then add to the stack pointer in one operation.
     while (current->localCount > 0 && current->locals[current->localCount - 1].depth > current->scopeDepth) {
         if (current->locals[current->localCount - 1].isCaptured) {
             emitByte(OP_CLOSE_UPVALUE);
@@ -294,22 +332,35 @@ static bool identifiersEqual(Token *a, Token *b)
     return memcmp(a->start, b->start, a->length) == 0;
 }
 
-static int resolveLocal(Compiler *compiler, Token *name)
-{
-    for (int i = compiler->localCount - 1; i >= 0; i--) {
-        Local *local = &compiler->locals[i];
+typedef struct {
+    int index;
+    bool isArgument;
+} LocalIndex;
+
+static inline LocalIndex resolveLocalFromArray(Token *name, Local locals[], int count, bool isArgument)
+{   
+    for (int i = count - 1; i >= 0; i--) {
+        Local *local = &locals[i];
         if (identifiersEqual(name, &local->name)) {
             if (local->depth == -1) {
                 error("Can't read local variable in its own initializer.");
             }
-            return i;
+            return (LocalIndex) {.index = i, .isArgument = isArgument};
         }
     }
-
-    return -1;
+    return (LocalIndex) {.index = -1 };
 }
 
-static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
+static LocalIndex resolveLocal(Compiler *compiler, Token *name)
+{
+    LocalIndex index;
+    index = resolveLocalFromArray(name, compiler->locals, compiler->localCount, false);
+    if (index.index != -1) return index;
+    index = resolveLocalFromArray(name, compiler->arguments, compiler->argumentCount, true);
+    return index;
+}
+
+static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal, bool isArgument)
 {
     int upvalueCount = compiler->function->upvalueCount;
 
@@ -334,15 +385,19 @@ static int resolveUpvalue(Compiler *compiler, Token *name)
 {
     if (compiler->enclosing == NULL) return -1;
 
-    int local = resolveLocal(compiler->enclosing, name);
-    if (local != -1) {
-        compiler->enclosing->locals[local].isCaptured = true;
-        return addUpvalue(compiler, (uint8_t)local, true);
+    LocalIndex local = resolveLocal(compiler->enclosing, name);
+    if (local.index != -1) {
+        if (local.isArgument) {
+            compiler->enclosing->arguments[local.index].isCaptured = true;
+        } else {
+            compiler->enclosing->locals[local.index].isCaptured = true;
+        }
+        return addUpvalue(compiler, (uint8_t)local.index, true, local.isArgument);
     }
 
     int upvalue = resolveUpvalue(compiler->enclosing, name);
     if (upvalue != -1) {
-        return addUpvalue(compiler, (uint8_t)upvalue, false);
+        return addUpvalue(compiler, (uint8_t)upvalue, false, false);
     }
 
     return -1;
@@ -457,7 +512,7 @@ static void binary(bool canAssign)
         case TOKEN_GREATER_EQUAL:   emitBytes(OP_LESS, OP_NOT); break;
         case TOKEN_LESS:            emitByte(OP_LESS); break;
         case TOKEN_LESS_EQUAL:      emitBytes(OP_GREATER, OP_NOT); break;
-        case TOKEN_PLUS:            emitByte(OP_ADD); break;
+        case TOKEN_PLUS:            emitBinary(CURRENT, LOX_OP_ADD); break;
         case TOKEN_MINUS:           emitByte(OP_SUBTRACT); break;
         case TOKEN_STAR:            emitByte(OP_MULTIPLY); break;
         case TOKEN_SLASH:           emitByte(OP_DIVIDE); break;
@@ -491,9 +546,9 @@ static void dot(bool canAssign)
 static void literal(bool canAssign)
 {
     switch (parser.previous.type) {
-        case TOKEN_FALSE: emitByte(OP_FALSE); break;
-        case TOKEN_NIL: emitByte(OP_NIL); break;
-        case TOKEN_TRUE: emitByte(OP_TRUE); break;
+        case TOKEN_FALSE: emitFalse(CURRENT); break;
+        case TOKEN_NIL: emitNil(CURRENT); break;
+        case TOKEN_TRUE: emitTrue(CURRENT); break;
         default: return; // Unreachable.
     }
 }
@@ -515,26 +570,61 @@ static void string(bool canAssign)
     emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
+static void handleArgument(int index, bool set)
+{
+    if (set) {
+        emitSetArgument(CURRENT, current->argumentCount, index);
+        // This could be an error, now that we can distinguish.
+    } else {
+        emitGetArgument(CURRENT, current->argumentCount, index);
+    }
+}
+
+static void handleLocal(int index, bool set)
+{
+    if (set) {
+        emitSetLocal(CURRENT, current->localCount, index);
+    } else {
+        emitGetLocal(CURRENT, current->localCount, index);
+    }
+}
+
+static void handleUpvalue(int index, bool set)
+{
+
+}
+
+static void handleGlobal(int index, bool set)
+{
+    if (set) {
+        emitSetGlobal(CURRENT, LOX_OP_GET_GLOBAL, index);
+    } else {
+        emitGetGlobal(CURRENT, LOX_OP_SET_GLOBAL, index);
+    }
+}
+
 static void namedVariable(Token name, bool canAssign)
 {
     uint8_t getOp, setOp;
-    int arg = resolveLocal(current, &name);
-    if (arg != -1) {
-        getOp = OP_GET_LOCAL;
-        setOp = OP_SET_LOCAL;
-    } else if ((arg = resolveUpvalue(current, &name)) != -1) {
-        getOp = OP_GET_UPVALUE;
-        setOp = OP_SET_UPVALUE;
+    void (*handler)(int, bool);
+    LocalIndex arg = resolveLocal(current, &name);
+    if (arg.index != -1) {
+        if (arg.isArgument) {
+            handler = handleArgument;
+        } else {
+            handler = handleLocal;
+        }
+    } else if ((arg.index = resolveUpvalue(current, &name)) != -1) {
+        handler = handleUpvalue;
     } else {
-        arg = identifierConstant(&name);
-        getOp = OP_GET_GLOBAL;
-        setOp = OP_SET_GLOBAL;
+        arg.index = identifierConstant(&name);
+        handler = handleGlobal;
     }
     if (canAssign && match(TOKEN_EQUAL)) {
         expression();
-        emitBytes(setOp, (uint8_t)arg);
+        handler(arg.index, true);
     } else {
-        emitBytes(getOp, (uint8_t)arg);
+        handler(arg.index, false);
     }
 }
 
@@ -875,7 +965,7 @@ static void printStatement()
 {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after value.");
-    emitByte(OP_PRINT);
+    emitPrint(CURRENT, LOX_OP_PRINT);
 }
 
 static void returnStatement()
@@ -885,7 +975,7 @@ static void returnStatement()
     }
 
     if (match(TOKEN_SEMICOLON)) {
-        emitReturn();
+        emitReturn_();
     } else {
         if (current->type == TYPE_INITIALIZER) {
             error("Can't return a value from an initializer.");

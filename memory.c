@@ -11,6 +11,21 @@
 
 #define GC_HEAP_GROW_FACTOR 2
 
+int gcRootCount = 0;
+Value gcRoots[10];
+
+inline
+void pushGCRoot(Value root)
+{
+    gcRoots[gcRootCount++] = root;
+}
+
+inline
+Value popGCRoot()
+{
+    return gcRoots[--gcRootCount];
+}
+
 void *reallocate(void *pointer, size_t oldSize, size_t newSize)
 {
     vm.bytesAllocated += newSize - oldSize;
@@ -168,13 +183,13 @@ static void freeObject(Obj *object)
 
 static void markRoots()
 {
-    for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
-        markValue(*slot);
-    }
-
-    for (int i = 0; i < vm.frameCount; i++) {
-        markObject((Obj *)vm.frames[i].closure);
-    }
+//    for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
+//        markValue(*slot);
+//    }
+//
+//    for (int i = 0; i < vm.frameCount; i++) {
+//        markObject((Obj *)vm.frames[i].closure);
+//    }
 
     for (ObjUpvalue *upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->next) {
         markObject((Obj *)upvalue);

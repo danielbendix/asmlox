@@ -1,3 +1,8 @@
 *.swp
 *.vim
 clox
+clox.dSYM
+
+*.o
+*.orig
+a.out

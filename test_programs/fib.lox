@@ -1,0 +1,16 @@
+fun fib(n) {
+    var f1 = 0;
+    var f2 = 1;
+    var tmp;
+    while (n > 0) {
+        tmp = f2;
+        f2 = f1 + f2;
+        f1 = tmp;
+        n = n - 1;
+    }
+    return f1;
+}
+
+for (var i = 0; i < 100; i = i + 1) {
+    print fib(i);
+}

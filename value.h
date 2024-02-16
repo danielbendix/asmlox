@@ -6,9 +6,10 @@
 typedef struct Obj Obj;
 typedef struct ObjString ObjString;
 
+// This could be using single bits instead, allowing bitwise AND followed by comparison to test the type for binary operators.
 typedef enum {
-    VAL_BOOL,
     VAL_NIL,
+    VAL_BOOL,
     VAL_NUMBER,
     VAL_OBJ
 } ValueType;
@@ -16,7 +17,7 @@ typedef enum {
 typedef struct {
     ValueType type;
     union {
-        bool boolean;
+        int32_t boolean;
         double number;
         Obj *obj;
     } as;
