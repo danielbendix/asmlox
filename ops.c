@@ -1,6 +1,7 @@
-
 #include <stdlib.h>
 #include <stdio.h>
+
+#include <assert.h>
 
 #include "ops.h"
 
@@ -15,12 +16,15 @@ void runtimeError(const char *string)
     // Run through frame pointers until we get back to the start.
     // TOOD: Unwind stack to when vm was called.
     // Maybe use setjmp/longjmp
+    assert(false);
     printf("%s\n", string);
     exit(1);
 }
 
 const void *OP_TABLE[LOX_OP_COUNT] = {
     [LOX_OP_ADD] = (void *) op_add,
+
+    [LOX_OP_LESS] = (void *) op_less,
 
     [LOX_OP_PRINT] = (void *) op_print,
 

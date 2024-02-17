@@ -94,13 +94,13 @@ uint32_t sub_immediate(uint32_t rn, uint32_t rd, uint32_t immediate)
 static inline
 uint32_t branch(uint32_t offset)
 {
-    return BRANCH | (offset & 0x2FFFFFF);
+    return BRANCH | (offset & 0x3FFFFFF);
 }
 
 static inline
 uint32_t branch_conditional(uint32_t condition, uint32_t immediate)
 {
-    return BRANCH_CONDITION | condition | ((immediate & 0x7FFF) << 4);
+    return BRANCH_CONDITION | condition | ((immediate & 0x7FFF) << 5);
 }
 
 static inline 
@@ -246,7 +246,7 @@ GenResult emitTrue(Chunk *chunk, int line)
 
 GenResult emitPop(Chunk *chunk, int line, uint32_t n)
 {
-    WRITE(sub_immediate(SP, SP, TO_STACK_SLOT(n)));
+    WRITE(add_immediate(SP, SP, TO_STACK_SLOT(n)));
     return GEN_OK;
 }
 
@@ -270,11 +270,34 @@ GenResult emitPrint(Chunk *chunk, int line, uint32_t op)
     return GEN_OK;
 }
 
-/// This must emit only a single jump instruction, to be patched later.
-GenResult emitConditionalJump(Chunk *chunk, int line)
+GenResult emitLoop(Chunk *chunk, int line, int start)
 {
-    // FIXME: Figure out condition.
+    int32_t offset = start - chunk->count;
+    WRITE(branch(offset));
+    return GEN_OK;
+}
+
+/// This must emit only a single jump instruction, to be patched later.
+int emitConditionalJump(Chunk *chunk, int line)
+{
+    WRITE(ldp_signed_offset(0, 1, SP, 0));
+    WRITE(0x7100001F); // cmp w0, #0
+    WRITE(0x54000060); // b.eq <condition>
+    WRITE(0x7100041F); // cmp w0, #1
+    WRITE(0x7A400820); // ccmp w1, #0, #0, eq
+    // condition:
+    int offset = chunk->count;
     WRITE(branch_conditional(COND_EQUAL, 0));
+    return offset;
+}
+
+GenResult patchConditionalJump(Chunk *chunk, int line, int jump, int current)
+{
+    int32_t offset = current - jump;
+    if (offset >= 1 << 26) {
+        return GEN_BRANCH_OVERFLOW;
+    }
+    chunk->code[jump] = branch_conditional(COND_EQUAL, offset);
     return GEN_OK;
 }
 

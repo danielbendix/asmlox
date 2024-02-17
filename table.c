@@ -84,8 +84,10 @@ static void adjustCapacity(Table *table, int capacity)
 bool tableSet(Table *table, ObjString *key, Value value)
 {
     if (table->count + 1 > table->capacity * TABLE_MAX_LOAD) {
+        pushGCRoot(value);
         int capacity = GROW_CAPACITY(table->capacity);
         adjustCapacity(table, capacity);
+        popGCRoot();
     }
     Entry *entry = findEntry(table->entries, table->capacity, key);
     bool isNewKey = entry->key == NULL;

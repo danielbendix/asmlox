@@ -4,7 +4,21 @@ __attribute__((noreturn))
 void runtimeError(const char *string);
 
 enum LOX_OP {
+    // Binary (2 -> 1)
     LOX_OP_ADD,
+    LOX_OP_SUBTRACT,
+    LOX_OP_MULTIPLY,
+    LOX_OP_DIVIDE,
+
+    LOX_OP_EQUAL,
+    LOX_OP_LESS,
+    LOX_OP_GREATER,
+
+    // Unary (1 -> 1)
+    LOX_OP_NOT,
+    LOX_OP_NEGATE,
+
+    LOX_OP_CONDITION,
 
     LOX_OP_PRINT,
 
@@ -20,6 +34,16 @@ enum LOX_OP {
 };
 
 Value op_add(Value v1, Value v2);
+//Value op_subtract(Value v1, Value v2);
+//Value op_multiply(Value v1, Value v2);
+//Value op_divide(Value v1, Value v2);
+
+//Value op_equal(Value v1, Value v2);
+Value op_less(Value v1, Value v2);
+
+//Value op_not(Value value);
+
+void op_condition(Value value);
 
 void op_print(Value value);
 

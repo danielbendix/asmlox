@@ -30,7 +30,13 @@ GenResult emitTrue(Chunk *chunk, int line);
 GenResult emitBinary(Chunk *chunk, int line, uint32_t op);
 GenResult emitPrint(Chunk *chunk, int line, uint32_t op);
 
-
+GenResult emitPop(Chunk *chunk, int line, uint32_t n);
 
 GenResult emitReturn(Chunk *chunk, int line, uint32_t op);
 GenResult emitReturnFromScript(Chunk *chunk, int line);
+
+// Branching constructs
+
+GenResult emitLoop(Chunk *chunk, int line, int start);
+int emitConditionalJump(Chunk *chunk, int line);
+GenResult patchConditionalJump(Chunk *chunk, int line, int jump, int current);

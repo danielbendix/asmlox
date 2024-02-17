@@ -12,6 +12,8 @@
 
 // Temporary solution to making code executable
 #include <sys/mman.h>
+// Temporary to handle unconverted code paths
+#include <assert.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -159,20 +161,15 @@ static bool match(TokenType type)
 
 static void emitByte(uint8_t byte)
 {
-    int *n = NULL;
-    *n = 1;
-    writeChunk(currentChunk(), byte, parser.previous.line);
+    assert(false && "Attempting to emit clox bytecode");
 }
 
 static void emitBytes(uint8_t byte1, uint8_t byte2)
 {
-    int *n = NULL;
-    *n = 1;
-    emitByte(byte1);
-    emitByte(byte2);
+    assert(false && "Attempting to emit clox bytecode");
 }
 
-static void emitLoop(int loopStart)
+static void emitLoop_(int loopStart)
 {
     emitByte(OP_LOOP);
 
@@ -457,7 +454,7 @@ static void defineVariable(uint8_t global)
         return;
     }
 
-    emitBytes(OP_DEFINE_GLOBAL, global);
+    emitDefineGlobal(CURRENT, LOX_OP_DEFINE_GLOBAL, global);
 }
 
 static uint8_t argumentList()
@@ -510,7 +507,7 @@ static void binary(bool canAssign)
         case TOKEN_EQUAL_EQUAL:     emitByte(OP_EQUAL); break;
         case TOKEN_GREATER:         emitByte(OP_GREATER); break;
         case TOKEN_GREATER_EQUAL:   emitBytes(OP_LESS, OP_NOT); break;
-        case TOKEN_LESS:            emitByte(OP_LESS); break;
+        case TOKEN_LESS:            emitBinary(CURRENT, LOX_OP_LESS); break;
         case TOKEN_LESS_EQUAL:      emitBytes(OP_GREATER, OP_NOT); break;
         case TOKEN_PLUS:            emitBinary(CURRENT, LOX_OP_ADD); break;
         case TOKEN_MINUS:           emitByte(OP_SUBTRACT); break;
@@ -597,9 +594,9 @@ static void handleUpvalue(int index, bool set)
 static void handleGlobal(int index, bool set)
 {
     if (set) {
-        emitSetGlobal(CURRENT, LOX_OP_GET_GLOBAL, index);
+        emitSetGlobal(CURRENT, LOX_OP_SET_GLOBAL, index);
     } else {
-        emitGetGlobal(CURRENT, LOX_OP_SET_GLOBAL, index);
+        emitGetGlobal(CURRENT, LOX_OP_GET_GLOBAL, index);
     }
 }
 
@@ -893,7 +890,7 @@ static void expressionStatement()
 {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-    emitByte(OP_POP);
+    emitPop(CURRENT, 1);
 }
 
 static void forStatement()
@@ -926,13 +923,13 @@ static void forStatement()
         emitByte(OP_POP);
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
-        emitLoop(loopStart);
+        emitLoop_(loopStart);
         loopStart = incrementStart;
         patchJump(bodyJump);
     }
 
     statement();
-    emitLoop(loopStart);
+    emitLoop_(loopStart);
 
     if (exitJump != -1) {
         patchJump(exitJump);
@@ -994,13 +991,20 @@ static void whileStatement()
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-    int exitJump = emitJump(OP_JUMP_IF_FALSE);
-    emitByte(OP_POP);
+    int exitJump = emitConditionalJump(CURRENT);
+    // TODO: make POP part of condition read
+    emitPop(CURRENT, 1);
+    //int exitJump = emitJump(OP_JUMP_IF_FALSE);
+    //emitByte(OP_POP);
     statement();
-    emitLoop(loopStart);
+    emitLoop(CURRENT, loopStart);
+    //emitLoop(loopStart);
 
-    patchJump(exitJump);
-    emitByte(OP_POP);
+    patchConditionalJump(CURRENT, exitJump, currentChunk()->count);
+    //patchJump(exitJump);
+    //emitByte(OP_POP);
+    // TODO: make POP part of condition read
+    emitPop(CURRENT, 1);
 }
 
 static void synchronize()

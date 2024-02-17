@@ -3,6 +3,9 @@
 clox
 clox.dSYM
 
+prof.data
+trace.pdf
+
 *.o
 *.orig
 a.out
