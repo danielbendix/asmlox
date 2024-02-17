@@ -1,4 +1,5 @@
 #include "value.h"
+#include "object.h"
 
 __attribute__((noreturn))
 void runtimeError(const char *string);
@@ -26,6 +27,9 @@ enum LOX_OP {
     LOX_OP_GET_GLOBAL,
     LOX_OP_SET_GLOBAL,
 
+    LOX_OP_CLOSURE,
+    LOX_OP_CALL,
+
     LOX_OP_RETURN,
     LOX_OP_RETURN_NIL,
     LOX_OP_RETURN_INITIALIZER,
@@ -50,6 +54,9 @@ void op_print(Value value);
 void op_define_global(Value value, ObjString *name);
 Value op_get_global(ObjString *name);
 Value op_set_global(Value value, ObjString *name);
+
+Value op_closure(ObjFunction *function);
+Value op_call(Value callee, int argCount);
 
 void op_return();
 void op_return_nil();

@@ -6,6 +6,7 @@ clox.dSYM
 prof.data
 trace.pdf
 
+dumps/
 *.o
 *.orig
 a.out

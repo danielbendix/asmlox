@@ -172,7 +172,7 @@ GenResult emitGetLocal(Chunk *chunk, int line, uint32_t localCount, uint32_t loc
     uint32_t index = localCount - local - 1;
 
     if (index <= 29) {
-        WRITE(ldp_signed_offset(0, 1, FP, (-index - 3) * 2));
+        WRITE(ldp_signed_offset(0, 1, FP, (-index - 2) * 2));
         WRITE(stp_pre_index(0, 1, SP, -2));
     } else {
         WRITE(sub_immediate(FP, 0, TO_STACK_SLOT(index)));
@@ -190,7 +190,7 @@ GenResult emitSetLocal(Chunk *chunk, int line, uint32_t localCount, uint32_t loc
 
     WRITE(ldp_signed_offset(0, 1, SP, 0))
     if (index <= 29) {
-        WRITE(stp_signed_offset(0, 1, FP, (-index - 3) * 2));
+        WRITE(stp_signed_offset(0, 1, FP, (-index - 2) * 2));
     } else {
         WRITE(sub_immediate(FP, 0, TO_STACK_SLOT(index)));
         WRITE(stp_signed_offset(0, 1, FP, -3 * 2));
@@ -264,7 +264,6 @@ GenResult emitPrint(Chunk *chunk, int line, uint32_t op)
 {
     // Since this value was just calculated, it may be in x0 and x1 already.
     // We may need to have the constant operations load from the stack to rely on this assertion.
-    WRITE(ldp_signed_offset(0, 1, SP, 0));
     WRITE(ldr_signed_offset(16, OP_TABLE_REGISTER, op));
     WRITE(branch_link_register(16));
     return GEN_OK;
@@ -314,6 +313,22 @@ GenResult emitCondition(Chunk *chunk, int line)
 GenResult emitConditionFromBool(Chunk *chunk, int line)
 {
     WRITE(0x7100003F); // cmp  w1, #0
+    return GEN_OK;
+}
+
+GenResult emitClosure(Chunk *chunk, int line, uint32_t op, uint32_t functionIndex)
+{
+    WRITE(ldr_signed_offset(0, CONSTANT_REGISTER, (functionIndex << 1) + 1));
+    WRITE(ldr_signed_offset(16, OP_TABLE_REGISTER, op));
+    WRITE(branch_link_register(16));
+    return GEN_OK;
+}
+
+GenResult emitCall(Chunk *chunk, int line, uint32_t op, uint32_t argCount)
+{
+    WRITE(mov_immediate(2, argCount));
+    WRITE(ldr_signed_offset(16, OP_TABLE_REGISTER, op));
+    WRITE(branch_link_register(16));
     return GEN_OK;
 }
 

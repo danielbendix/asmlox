@@ -1,0 +1,47 @@
+fun loop() {
+    var a = 0;
+    var b = 0;
+    var c = 0;
+    var d = 0;
+    var e = 0;
+    var f = 0;
+    var g = 0;
+    var h = 0;
+    var sum = 0;
+
+    while (a < 10) {
+        b = 0;
+        while (b < 10) {
+            c = 0; 
+            while (c < 10) {
+                d = 0;
+                while (d < 10) {
+                    e = 0;
+                    while (e < 10) {
+                        f = 0;
+                        while (f < 10) {
+                            g = 0;
+                            while (g < 10) {
+                                h = 0;
+                                while (h < 10) {
+                                    sum = sum + 1;
+                                    h = h + 1;
+                                }
+                                g = g + 1;
+                            }
+                            f = f + 1;
+                        }
+                        e = e + 1;
+                    }
+                    d = d + 1;
+                }
+                c = c + 1;
+            }
+            b = b + 1;
+        }
+        a = a + 1;
+    }
+
+    print sum;
+}
+loop();

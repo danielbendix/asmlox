@@ -194,6 +194,7 @@ static void emitReturn_()
         emitGetArgument(CURRENT, current->argumentCount, 0);
         //emitBytes(OP_GET_LOCAL, 0);
     } else {
+        emitNil(CURRENT);
         //emitByte(OP_NIL);
     }
 
@@ -276,8 +277,10 @@ static ObjFunction *endCompiler()
     // Kludge start
     void *space = mmap(NULL, sizeof(uint32_t) * function->chunk.count, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
-    FILE *f = fopen("test.o", "wb");
-
+    //printf("%s\n", function->name != NULL ? function->name->chars : "main");
+    char path[100] = "dumps/";
+    strcpy(path + 6, function->name != NULL ? function->name->chars : "main");
+    FILE *f = fopen(path, "wb");
     fwrite(function->chunk.code, sizeof(uint32_t), function->chunk.count, f);
     fclose(f);
 
@@ -400,6 +403,18 @@ static int resolveUpvalue(Compiler *compiler, Token *name)
     return -1;
 }
 
+static void addArgument(Token name)
+{
+    if (current->argumentCount == UINT8_COUNT) {
+        error("Too many parameters in function.");
+        return;
+    }
+    Local *argument = &current->arguments[current->argumentCount++];
+    argument->name = name;
+    argument->depth = current->scopeDepth;
+    argument->isCaptured = false;
+}
+
 static void addLocal(Token name)
 {
     if (current->localCount == UINT8_COUNT) {
@@ -417,6 +432,7 @@ static void declareVariable()
     if (current->scopeDepth == 0) return;
 
     Token *name = &parser.previous;
+    // TODO: Make sure this doesn't shadow an argument, if we want to adhere to the semantics of lox.
     for (int i = current->localCount - 1; i >= 0; i--) {
         Local *local = &current->locals[i];
         if (local->depth != -1 && local->depth < current->scopeDepth) {
@@ -429,6 +445,22 @@ static void declareVariable()
     }
 
     addLocal(*name);
+}
+
+static void parseArgument()
+{
+    consume(TOKEN_IDENTIFIER, "Expect parameter name");
+
+    Token *name = &parser.previous;
+    for (int i = current->argumentCount - 1; i >= 0; i--) {
+        Local *argument = &current->arguments[i];
+
+        if (identifiersEqual(name, &argument->name)) {
+            error("Already a variable with this name in this scope.");
+        }
+    }
+
+    addArgument(*name);
 }
 
 static uint8_t parseVariable(const char *errorMessage)
@@ -520,7 +552,8 @@ static void binary(bool canAssign)
 static void call(bool canAssign)
 {
     uint8_t argCount = argumentList();
-    emitBytes(OP_CALL, argCount);
+    emitCall(CURRENT, LOX_OP_CALL, argCount);
+    //emitBytes(OP_CALL, argCount);
 }
 
 static void dot(bool canAssign)
@@ -785,8 +818,9 @@ static void function(FunctionType type)
             if (current->function->arity > 255) {
                 errorAtCurrent("Can't have more than 255 parameters.");
             }
-            uint8_t constant = parseVariable("Expect parameter name.");
-            defineVariable(constant);
+            parseArgument();
+            //uint8_t constant = parseArgument();
+            //defineVariable(constant);
         } while (match(TOKEN_COMMA));
 
     }
@@ -795,8 +829,11 @@ static void function(FunctionType type)
     block();
 
     ObjFunction *function = endCompiler();
-    emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 
+    emitClosure(CURRENT, LOX_OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+    //emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+
+    // This should be implemented as an upvalue map on the function object.
     for (int i = 0; i < function->upvalueCount; i++) {
         emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
         emitByte(compiler.upvalues[i].index);
@@ -980,7 +1017,8 @@ static void returnStatement()
 
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after return value.");
-        emitByte(OP_RETURN);
+        emitReturn(CURRENT, LOX_OP_RETURN);
+        //emitByte(OP_RETURN);
     }
 }
 

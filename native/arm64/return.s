@@ -22,9 +22,9 @@ _op_return:
     lsl x2, x2, STACK_SLOT_SHIFT
 
     ldp x19, x20, [x29, #-16] ; restore previous function and arity
-    ldp x29, x30, [x29] ; the frame pointer is now restored, including the frame that stores fp and lr
     sub sp, x29, x2
-    stp x0, x1, [sp] ; store return value on top of stack
+    ldp x29, x30, [x29] ; the frame pointer is now restored, including the frame that stores fp and lr
+    stp x0, x1, [sp, #16]! ; store return value on top of stack
     ret
 
 _op_return_nil:

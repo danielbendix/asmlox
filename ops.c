@@ -16,8 +16,8 @@ void runtimeError(const char *string)
     // Run through frame pointers until we get back to the start.
     // TOOD: Unwind stack to when vm was called.
     // Maybe use setjmp/longjmp
-    assert(false);
     printf("%s\n", string);
+    assert(false);
     exit(1);
 }
 
@@ -32,7 +32,11 @@ const void *OP_TABLE[LOX_OP_COUNT] = {
     [LOX_OP_GET_GLOBAL] = (void *) op_get_global,
     [LOX_OP_SET_GLOBAL] = (void *) op_set_global,
 
+    [LOX_OP_CLOSURE] = (void *) op_closure,
+
     [LOX_OP_RETURN] = (void *) op_return,
+    [LOX_OP_CALL] = (void *) op_call,
+
     [LOX_OP_RETURN_NIL] = (void *) op_return_nil,
     [LOX_OP_RETURN_INITIALIZER] = (void *) LOX_OP_RETURN_INITIALIZER,
 };

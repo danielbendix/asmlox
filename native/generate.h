@@ -32,6 +32,9 @@ GenResult emitPrint(Chunk *chunk, int line, uint32_t op);
 
 GenResult emitPop(Chunk *chunk, int line, uint32_t n);
 
+GenResult emitClosure(Chunk *chunk, int line, uint32_t op, uint32_t functionIndex);
+GenResult emitCall(Chunk *chunk, int line, uint32_t op, uint32_t argCount);
+
 GenResult emitReturn(Chunk *chunk, int line, uint32_t op);
 GenResult emitReturnFromScript(Chunk *chunk, int line);
 

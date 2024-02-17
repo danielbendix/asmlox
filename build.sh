@@ -6,6 +6,8 @@ native/arm64/print.o \
 native/arm64/add.o \
 native/arm64/less.o \
 native/arm64/global.o \
+native/arm64/closure.o \
+native/arm64/call.o \
 native/arm64/return.o \
 -lprofiler \
 -lreadline -O3 -g -o clox 

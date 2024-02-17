@@ -1,0 +1,18 @@
+//fun f1() {
+//    print 0;
+//}
+//fun f2() {
+//    var a = 0;
+//    print a;
+//}
+fun f3(a) {
+    print a;
+    return 100;
+}
+
+
+//f1();
+//f2();
+print f3(10);
+
+//print "end";
