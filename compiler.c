@@ -303,7 +303,7 @@ static void endScope()
 {
     current->scopeDepth--;
 
-    // TODO: For a scope, we could figure out the up value indices, and inject instructions to close them by index,
+    // TODO: For a scope, we could figure out the upvalue indices, and inject instructions to close them by index,
     // and then add to the stack pointer in one operation.
     while (current->localCount > 0 && current->locals[current->localCount - 1].depth > current->scopeDepth) {
         if (current->locals[current->localCount - 1].isCaptured) {
