@@ -1,0 +1,16 @@
+fun function() {
+    var s = "i";
+    var acc = "%";
+
+    var i = 0;
+
+    while (i < 1000) {
+        acc = acc + s;
+
+        i = i + 1;
+    }
+
+    print acc;
+}
+
+function();

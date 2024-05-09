@@ -169,7 +169,7 @@ GenResult emitGetLocal(Chunk *chunk, int line, uint32_t localCount, uint32_t loc
 {
     assert(local <= 255);
     assert(local <= localCount);
-    uint32_t index = localCount - local - 1;
+    uint32_t index = local;
 
     if (index <= 29) {
         WRITE(ldp_signed_offset(0, 1, FP, (-index - 2) * 2));
@@ -186,7 +186,7 @@ GenResult emitSetLocal(Chunk *chunk, int line, uint32_t localCount, uint32_t loc
 {
     assert(local <= 255);
     assert(local <= localCount);
-    uint32_t index = localCount - local - 1;
+    uint32_t index = local;
 
     //WRITE(ldp_signed_offset(0, 1, SP, 0))
     if (index <= 29) {

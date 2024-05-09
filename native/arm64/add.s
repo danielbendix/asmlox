@@ -8,11 +8,10 @@ _op_add:                                ; @op_add
     ldp x0, x1, [sp, #16]
     ldp x2, x3, [sp, #0]
 
-    and w4, w0, w2
-	;cmp	w0, w2
-	;b.ne	LBB0_7
+	cmp	w0, w2
+	b.ne	LBB0_7
 ; %bb.1:
-	cmp	w4, #2
+	cmp	w0, #2
 	b.ne	LBB0_3
 ; %bb.2:
 	fmov	d0, x1
@@ -24,7 +23,6 @@ _op_add:                                ; @op_add
 	ret
 LBB0_3:
 
-    ; TODO: Only do these if string or failure
 	stp	x22, x21, [sp, #-48]!           ; 16-byte Folded Spill
 	.cfi_def_cfa_offset 48
 	stp	x20, x19, [sp, #16]             ; 16-byte Folded Spill
@@ -37,6 +35,9 @@ LBB0_3:
 	.cfi_offset w20, -32
 	.cfi_offset w21, -40
 	.cfi_offset w22, -48
+
+    mov x20, x1
+    mov x19, x3
 
 	cmp	w0, #3
 	b.ne	LBB0_7
