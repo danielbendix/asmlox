@@ -12,7 +12,6 @@
 __attribute__((noreturn))
 void runtimeError(const char *string)
 {
-
     // Run through frame pointers until we get back to the start.
     // TOOD: Unwind stack to when vm was called.
     // Maybe use setjmp/longjmp
@@ -23,8 +22,16 @@ void runtimeError(const char *string)
 
 const void *OP_TABLE[LOX_OP_COUNT] = {
     [LOX_OP_ADD] = (void *) op_add,
+    [LOX_OP_SUBTRACT] = (void *) op_subtract,
+    [LOX_OP_MULTIPLY] = (void *) op_multiply,
+    [LOX_OP_DIVIDE] = (void *) op_divide,
 
+    [LOX_OP_INCREMENT] = (void *) op_increment,
+
+    [LOX_OP_EQUAL] = (void *) op_equal,
     [LOX_OP_LESS] = (void *) op_less,
+
+    [LOX_OP_NOT] = (void *) op_not,
 
     [LOX_OP_PRINT] = (void *) op_print,
 

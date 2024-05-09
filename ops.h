@@ -11,6 +11,8 @@ enum LOX_OP {
     LOX_OP_MULTIPLY,
     LOX_OP_DIVIDE,
 
+    LOX_OP_INCREMENT,
+
     LOX_OP_EQUAL,
     LOX_OP_LESS,
     LOX_OP_GREATER,
@@ -38,14 +40,16 @@ enum LOX_OP {
 };
 
 Value op_add(Value v1, Value v2);
-//Value op_subtract(Value v1, Value v2);
-//Value op_multiply(Value v1, Value v2);
-//Value op_divide(Value v1, Value v2);
+Value op_subtract(Value v1, Value v2);
+Value op_multiply(Value v1, Value v2);
+Value op_divide(Value v1, Value v2);
 
-//Value op_equal(Value v1, Value v2);
+Value op_increment(Value value);
+
+Value op_equal(Value v1, Value v2);
 Value op_less(Value v1, Value v2);
 
-//Value op_not(Value value);
+Value op_not(Value value);
 
 void op_condition(Value value);
 

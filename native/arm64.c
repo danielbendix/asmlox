@@ -155,7 +155,7 @@ GenResult emitSetArgument(Chunk *chunk, int line, uint32_t argCount, uint32_t ar
     uint32_t index = argCount - argument - 1;
     // Since the frame pointer points to the frame that stores old fp and lr, 
     // we have to add an extra slot offset to the address.
-    WRITE(ldp_signed_offset(0, 1, SP, 0));
+    //WRITE(ldp_signed_offset(0, 1, SP, 0));
     if (index <= 30) {
         WRITE(stp_signed_offset(0, 1, FP, (index + 1) * 2));
     } else {
@@ -188,7 +188,7 @@ GenResult emitSetLocal(Chunk *chunk, int line, uint32_t localCount, uint32_t loc
     assert(local <= localCount);
     uint32_t index = localCount - local - 1;
 
-    WRITE(ldp_signed_offset(0, 1, SP, 0))
+    //WRITE(ldp_signed_offset(0, 1, SP, 0))
     if (index <= 29) {
         WRITE(stp_signed_offset(0, 1, FP, (-index - 2) * 2));
     } else {
@@ -260,6 +260,13 @@ GenResult emitBinary(Chunk *chunk, int line, uint32_t op)
     return GEN_OK;
 }
 
+GenResult emitUnary(Chunk *chunk, int line, uint32_t op)
+{
+    WRITE(ldr_signed_offset(16, OP_TABLE_REGISTER, op));
+    WRITE(branch_link_register(16));
+    return GEN_OK;
+}
+
 GenResult emitPrint(Chunk *chunk, int line, uint32_t op)
 {
     // Since this value was just calculated, it may be in x0 and x1 already.
@@ -273,6 +280,24 @@ GenResult emitLoop(Chunk *chunk, int line, int start)
 {
     int32_t offset = start - chunk->count;
     WRITE(branch(offset));
+    return GEN_OK;
+}
+
+// TODO: Remove trailing underscore when total conversion is complete.
+int emitJump_(Chunk *chunk, int line)
+{
+    int offset = chunk->count;
+    WRITE(branch(0));
+    return offset;
+}
+
+GenResult patchJump_(Chunk *chunk, int line, int jump, int current)
+{
+    int32_t offset = current - jump;
+    if (offset >= 1 << 26) {
+        return GEN_BRANCH_OVERFLOW;
+    }
+    chunk->code[jump] = branch(offset);
     return GEN_OK;
 }
 

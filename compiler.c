@@ -536,15 +536,15 @@ static void binary(bool canAssign)
 
     switch (operatorType) {
         case TOKEN_BANG_EQUAL:      emitBytes(OP_EQUAL, OP_NOT); break;
-        case TOKEN_EQUAL_EQUAL:     emitByte(OP_EQUAL); break;
+        case TOKEN_EQUAL_EQUAL:     emitBinary(CURRENT, LOX_OP_EQUAL); break;
         case TOKEN_GREATER:         emitByte(OP_GREATER); break;
         case TOKEN_GREATER_EQUAL:   emitBytes(OP_LESS, OP_NOT); break;
         case TOKEN_LESS:            emitBinary(CURRENT, LOX_OP_LESS); break;
         case TOKEN_LESS_EQUAL:      emitBytes(OP_GREATER, OP_NOT); break;
         case TOKEN_PLUS:            emitBinary(CURRENT, LOX_OP_ADD); break;
-        case TOKEN_MINUS:           emitByte(OP_SUBTRACT); break;
-        case TOKEN_STAR:            emitByte(OP_MULTIPLY); break;
-        case TOKEN_SLASH:           emitByte(OP_DIVIDE); break;
+        case TOKEN_MINUS:           emitBinary(CURRENT, LOX_OP_SUBTRACT); break;
+        case TOKEN_STAR:            emitBinary(CURRENT, LOX_OP_MULTIPLY); break;
+        case TOKEN_SLASH:           emitBinary(CURRENT, LOX_OP_DIVIDE); break;
         default: break; // Unreachable.
     }
 }
@@ -714,7 +714,7 @@ static void unary(bool canAssign)
 
     // Emit the operator instruction.
     switch (operatorType) {
-        case TOKEN_BANG: emitByte(OP_NOT); break;
+        case TOKEN_BANG: emitUnary(CURRENT, LOX_OP_NOT); break;
         case TOKEN_MINUS: emitByte(OP_NEGATE); break;
         default: return; // unreachable
     }
@@ -982,17 +982,30 @@ static void ifStatement()
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-    int thenJump = emitJump(OP_JUMP_IF_FALSE);
-    emitByte(OP_POP);
+    int thenJump = emitConditionalJump(CURRENT);
+    emitPop(CURRENT, 1);
     statement();
 
-    int elseJump = emitJump(OP_JUMP);
+    int endJump = emitJump_(CURRENT);
 
-    patchJump(thenJump);
-    emitByte(OP_POP);
+    patchConditionalJump(CURRENT, thenJump, currentChunk()->count);
+    emitPop(CURRENT, 1);
 
     if (match(TOKEN_ELSE)) statement();
-    patchJump(elseJump);
+    patchJump_(CURRENT, endJump, currentChunk()->count);
+
+    // OLD
+//    int thenJump = emitJump(OP_JUMP_IF_FALSE);
+//    emitByte(OP_POP);
+//    statement();
+//
+//    int elseJump = emitJump(OP_JUMP);
+//
+//    patchJump(thenJump);
+//    emitByte(OP_POP);
+//
+//    if (match(TOKEN_ELSE)) statement();
+//    patchJump(elseJump);
 }
 
 static void printStatement()

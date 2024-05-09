@@ -50,6 +50,7 @@ typedef struct {
     uint32_t *code;
     int *lines;
     ValueArray constants;
+    int lastOp;
 } Chunk;
 
 void initChunk(Chunk *chunk);

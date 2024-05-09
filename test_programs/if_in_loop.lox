@@ -1,0 +1,45 @@
+fun loop() {
+    var i = 0;
+    var counter3 = 1;
+    var counter5 = 1;
+    var sum = 0;
+
+    while (i < 100000000) {
+        if (counter3 == 3) {
+            if (counter5 == 5) {
+                counter5 = 1;
+            }
+            sum = sum + i;
+            counter3 = 1;
+        } else {
+            counter3 = counter3 + 1;
+            if (counter5 == 5) {
+                sum = sum + i;
+                counter5 = 1;
+            } else {
+                counter5 = counter5 + 1;
+            }
+        }
+//        if (counter3 == 3) {
+//            print "fizz
+//";
+//
+//            counter3 = 1;
+//        } else {
+//            counter3 = counter3 + 1;
+//        }
+//
+//        if (counter5 == 5) {
+//            print "buzz";
+//
+//            counter5 = 1;
+//        } else {
+//            counter5 = counter5 + 1;
+//        }
+
+        i = i + 1;
+    }
+
+    print sum;
+}
+loop();
