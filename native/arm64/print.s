@@ -4,9 +4,17 @@
 	.p2align	2
 _op_print:                              ; @op_print
 	.cfi_startproc
-    ldp x0, x1, [sp], #16
 ; %bb.0:
-	b	_printValue
+	stp	x29, x30, [sp, #-16]!           ; 16-byte Folded Spill
+	.cfi_def_cfa_offset 16
+	mov	x29, sp
+	.cfi_def_cfa w29, 16
+	.cfi_offset w30, -8
+	.cfi_offset w29, -16
+	bl	_printValue
+	mov	w0, #10
+	ldp	x29, x30, [sp], #16             ; 16-byte Folded Reload
+	b	_putchar
 	.cfi_endproc
                                         ; -- End function
 .subsections_via_symbols
