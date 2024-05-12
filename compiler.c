@@ -309,7 +309,7 @@ static void endScope()
         if (current->locals[current->localCount - 1].isCaptured) {
             emitByte(OP_CLOSE_UPVALUE);
         } else {
-            emitByte(OP_POP);
+            emitPop(CURRENT, 1);
         }
         current->localCount--;
     }
@@ -949,28 +949,28 @@ static void forStatement()
         consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
 
         // Jump out of the loop if the condition is false.
-        exitJump = emitJump(OP_JUMP_IF_FALSE);
-        emitByte(OP_POP);
+        exitJump = emitConditionalJump(CURRENT);
+        emitPop(CURRENT, 1);
     }
 
     if (!match(TOKEN_RIGHT_PAREN)) {
-        int bodyJump = emitJump(OP_JUMP);
+        int bodyJump = emitJump_(CURRENT);
         int incrementStart = currentChunk()->count;
         expression();
-        emitByte(OP_POP);
+        emitPop(CURRENT, 1);
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
-        emitLoop_(loopStart);
+        emitLoop(CURRENT, loopStart);
         loopStart = incrementStart;
-        patchJump(bodyJump);
+        patchJump_(CURRENT, bodyJump, currentChunk()->count);
     }
 
     statement();
-    emitLoop_(loopStart);
+    emitLoop(CURRENT, loopStart);
 
     if (exitJump != -1) {
-        patchJump(exitJump);
-        emitByte(OP_POP); // Condition.
+        patchConditionalJump(CURRENT, exitJump, currentChunk()->count);
+        emitPop(CURRENT, 1);
     }
 
     endScope();
@@ -993,19 +993,6 @@ static void ifStatement()
 
     if (match(TOKEN_ELSE)) statement();
     patchJump_(CURRENT, endJump, currentChunk()->count);
-
-    // OLD
-//    int thenJump = emitJump(OP_JUMP_IF_FALSE);
-//    emitByte(OP_POP);
-//    statement();
-//
-//    int elseJump = emitJump(OP_JUMP);
-//
-//    patchJump(thenJump);
-//    emitByte(OP_POP);
-//
-//    if (match(TOKEN_ELSE)) statement();
-//    patchJump(elseJump);
 }
 
 static void printStatement()
