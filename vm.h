@@ -9,6 +9,9 @@
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
 typedef struct {
+    /// When we encounter this address during GC, we will stop traversing the stack.
+    void *mainReturnAddress;
+
     void *startFrame;
     Table globals;
     Table strings;
@@ -21,6 +24,12 @@ typedef struct {
     int grayCount;
     int grayCapacity;
     Obj **grayStack;
+
+    /// Pointer to the beginning of the code segment.
+    /// Used to detect if a frame belongs to JIT or native function.
+    void *code;
+    void *codeEnd;
+    void *nextCode;
 } VM;
 
 typedef enum {
@@ -33,6 +42,6 @@ extern VM vm;
 
 void initVM();
 void freeVM();
-InterpretResult interpret(const char *source);
+InterpretResult interpret(const char *source, bool isREPL);
 
 #endif

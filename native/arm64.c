@@ -373,8 +373,7 @@ GenResult emitReturnFromInitializer(Chunk *chunk, int line, uint32_t op)
 
 GenResult emitReturnFromScript(Chunk *chunk, int line)
 {
-    WRITE(0xA97E53B3); // ldp x19, x20, [x29, #-32]
-    WRITE(0xA97F5BB5); // ldp x21, x22, [x29, #-16]
+    WRITE(0xA97F53B3); // ldp x19, x20, [x29, #-16]
     WRITE(0xd2800000); // mov x0, #0 ; return code 0
     WRITE(0x910043bf); // add sp, x29, #16
     WRITE(0xA9407bbd); // ldp x29, x30, [x29] ; reload frame pointer

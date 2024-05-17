@@ -77,7 +77,7 @@ LBB0_3:
 	ldp	x29, x30, [sp, #32]             ; 16-byte Folded Reload
 	ldp	x20, x19, [sp, #16]             ; 16-byte Folded Reload
 	ldp	x22, x21, [sp], #48             ; 16-byte Folded Reload
-    stp x0, x1, [sp, #-16]! ; store result
+    stp x0, x1, [sp, #16]! ; store result
 	ret
 LBB0_7:
 Lloh0:

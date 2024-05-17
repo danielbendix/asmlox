@@ -1,0 +1,14 @@
+fun fib(n) {
+    if (n < 2) {
+        return n;
+    }
+    var f1 = fib(n - 2);
+    var f2 = fib(n - 1);
+    return f1 + f2;
+}
+
+print(fib(5));
+print(fib(15));
+print(fib(25));
+print(fib(35));
+print(fib(40));

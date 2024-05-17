@@ -1,0 +1,20 @@
+fun test_for_loop() {
+    for (var i = 0; i < 10; i = i + 1) {
+        print i;
+    }
+    for (var i = 0; i < 10;) {
+        print i;
+        i = i + 1;
+    }
+    var i = 0;
+    for (;;) {
+        if (i < 10) {
+            print i;
+            i = i + 1;
+        } else {
+            return;
+        }
+    }
+}
+
+test_for_loop();

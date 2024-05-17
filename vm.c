@@ -29,6 +29,10 @@ void initVM()
 
     vm.initString = NULL;
     vm.initString = copyString("init", 4);
+
+    vm.code = NULL;
+    vm.nextCode = NULL;
+    vm.codeEnd = NULL;
 }
 
 void freeVM()
@@ -39,11 +43,16 @@ void freeVM()
     freeObjects();
 }
 
-InterpretResult start_script(ObjClosure *closure, Value *constants, const void *optable[], void *code);
-
-InterpretResult interpret(const char *source)
+void setMainReturnAddress(void *returnAddress)
 {
-    ObjFunction *function = compile(source);
+    vm.mainReturnAddress = returnAddress;
+}
+
+InterpretResult start_script(ObjClosure *closure);
+
+InterpretResult interpret(const char *source, bool isREPL)
+{
+    ObjFunction *function = compile(source, isREPL);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
 
     pushGCRoot(OBJ_VAL(function));
@@ -51,5 +60,5 @@ InterpretResult interpret(const char *source)
     popGCRoot();
     pushGCRoot(OBJ_VAL(closure));
 
-    return start_script(closure, closure->function->chunk.constants.values, OP_TABLE, closure->function->chunk.code);
+    return start_script(closure);
 }

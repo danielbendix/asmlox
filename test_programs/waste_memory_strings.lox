@@ -1,0 +1,50 @@
+fun test() {
+    for (var i = 0; i < 26; i = i + 1) {
+        var string = "";
+        for (var j = i; j < 26; j = j + 1) {
+            string = string + getChar(j);
+        }
+        for (var j = 0; j < 26; j = j + 1) {
+            string = string + getChar(j);
+        }
+        for (var j = i; j < 26; j = j + 1) {
+            string = string + getChar(j);
+        }
+        for (var j = 0; j < 26; j = j + 1) {
+            string = string + getChar(j);
+        }
+        print i;
+    }
+}
+
+fun getChar(n) {
+    if (n == 0) return "a";
+    if (n == 1) return "b";
+    if (n == 2) return "c";
+    if (n == 3) return "d";
+    if (n == 4) return "e";
+    if (n == 5) return "f";
+    if (n == 6) return "g";
+    if (n == 7) return "h";
+    if (n == 8) return "i";
+    if (n == 9) return "j";
+    if (n == 10) return "k";
+    if (n == 11) return "l";
+    if (n == 12) return "m";
+    if (n == 13) return "n";
+    if (n == 14) return "o";
+    if (n == 15) return "p";
+    if (n == 16) return "q";
+    if (n == 17) return "r";
+    if (n == 18) return "s";
+    if (n == 19) return "t";
+    if (n == 20) return "u";
+    if (n == 21) return "v";
+    if (n == 22) return "w";
+    if (n == 23) return "x";
+    if (n == 24) return "y";
+    if (n == 25) return "z";
+    return;
+}
+
+test();

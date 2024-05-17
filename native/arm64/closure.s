@@ -5,6 +5,8 @@
 _op_closure:                            ; @op_closure
 	.cfi_startproc
 ; %bb.0:
+    ; This is designed to take just an ObjFunction * as an argument.
+    ; So we spill the functions onto the stack as a value for GC purposes.
 	stp	x29, x30, [sp, #-32]!           ; 16-byte Folded Spill
     mov w1, #3
     stp x1, x0, [sp, #16]

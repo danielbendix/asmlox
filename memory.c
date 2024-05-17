@@ -4,6 +4,10 @@
 #include "memory.h"
 #include "vm.h"
 
+#include <sys/mman.h>
+#include <errno.h>
+#include <assert.h>
+
 #ifdef DEBUG_LOG_GC
 #include <stdio.h>
 #include "debug.h"
@@ -25,6 +29,8 @@ Value popGCRoot()
 {
     return gcRoots[--gcRootCount];
 }
+
+#include <stdio.h>
 
 void *reallocate(void *pointer, size_t oldSize, size_t newSize)
 {
@@ -181,15 +187,47 @@ static void freeObject(Obj *object)
     }
 }
 
+// The amount of stack frames (16 bytes) that are spilt,
+// in addition to the frame itself.
+#define FUNCTION_STACK_SPILL 1
+#define MAIN_FUNCTION_STACK_SPILL 2
+
+static void walkStack() 
+{
+    void *codeStart = vm.code;
+    void *codeEnd = vm.codeEnd;
+    void *mainReturn = vm.mainReturnAddress;
+
+    void *stack;
+    void *frame;
+    void *link;
+
+    asm("mov %0, fp" : "=r"(frame));
+    asm("mov %0, lr" : "=r"(link));
+
+    while (link != mainReturn) {
+        void *newLink = *((void **) frame + 1);
+        void *newFrame = *((void **) frame);
+        if (newLink >= codeStart && newLink <= codeEnd) {
+            
+            Value *end = (Value *) newFrame - FUNCTION_STACK_SPILL;
+
+            Value *it = (Value *) frame + 1;
+
+            while (it != end) {
+                assert(it->type <= VAL_OBJ);
+                markValue(*it);
+                it++;
+            }
+        }
+        link = newLink;
+        frame = newFrame;
+    }
+}
+
 static void markRoots()
 {
-//    for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
-//        markValue(*slot);
-//    }
-//
-//    for (int i = 0; i < vm.frameCount; i++) {
-//        markObject((Obj *)vm.frames[i].closure);
-//    }
+    walkStack();
 
     for (ObjUpvalue *upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->next) {
         markObject((Obj *)upvalue);
@@ -248,7 +286,6 @@ void collectGarbage()
 #ifdef DEBUG_LOG_GC
     printf("-- gc end\n");
     printf("   collected %zu bytes (from %zu to %zo) next at %zu\n", before - vm.bytesAllocated, before, vm.bytesAllocated, vm.nextGC);
-
 #endif
 }
 
@@ -262,4 +299,30 @@ void freeObjects()
     }
 
     free(vm.grayStack);
+}
+
+// - Memory mapping
+
+void *mapMemory(size_t size)
+{
+    void *space = mmap(NULL, size, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (space == (void *) -1) {
+        return NULL;
+    }
+    return space;
+}
+
+void unmapMemory(void *address, size_t size)
+{
+    int result = munmap(address, size);
+    assert(result != -1);
+}
+
+int remapAsExecutable(void *address, size_t size)
+{
+    int result = mprotect(address, size, PROT_EXEC);
+    if (result == -1) {
+        return errno;
+    }
+    return 0;
 }

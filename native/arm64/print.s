@@ -5,6 +5,8 @@
 _op_print:                              ; @op_print
 	.cfi_startproc
 ; %bb.0:
+    ; At this point, the value will have been put on the stack,
+    ; and still be in registers x0 and x1.
 	stp	x29, x30, [sp, #-16]!           ; 16-byte Folded Spill
 	.cfi_def_cfa_offset 16
 	mov	x29, sp
@@ -13,7 +15,7 @@ _op_print:                              ; @op_print
 	.cfi_offset w29, -16
 	bl	_printValue
 	mov	w0, #10
-	ldp	x29, x30, [sp], #16             ; 16-byte Folded Reload
+	ldp	x29, x30, [sp], #32             ; 16-byte Folded Reload
 	b	_putchar
 	.cfi_endproc
                                         ; -- End function

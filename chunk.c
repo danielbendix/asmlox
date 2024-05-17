@@ -16,8 +16,11 @@ void initChunk(Chunk *chunk)
 
 void freeChunk(Chunk *chunk)
 {
-    // FIXME: we need another free list for code
-	//FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
+    if (!chunk->isExecutable) {
+        FREE_ARRAY(uint32_t, chunk->code, chunk->capacity);
+    } else {
+        // FIXME: Add to free list.
+    }
 	FREE_ARRAY(int, chunk->lines, chunk->capacity);
 	freeValueArray(&chunk->constants);
 	initChunk(chunk);

@@ -11,7 +11,7 @@ Lloh0:
 	adrp	x9, _vm@GOTPAGE
 Lloh1:
 	ldr	x9, [x9, _vm@GOTPAGEOFF]
-	add	x0, x9, #8
+	add	x0, x9, #16 ; OFFSETOF VM.globals
 	b	_tableSet
 	.loh AdrpLdrGot	Lloh0, Lloh1
 	.cfi_endproc
@@ -35,7 +35,7 @@ Lloh2:
 	adrp	x8, _vm@GOTPAGE
 Lloh3:
 	ldr	x8, [x8, _vm@GOTPAGEOFF]
-	add	x0, x8, #8
+	add	x0, x8, #16 ; OFFSETOF VM.globals
 	add	x2, sp, #16
 	bl	_tableGet
 	tbz	w0, #0, LBB1_2
@@ -71,7 +71,7 @@ Lloh6:
 	adrp	x8, _vm@GOTPAGE
 Lloh7:
 	ldr	x8, [x8, _vm@GOTPAGEOFF]
-	add	x19, x8, #8
+	add	x19, x8, #16 ; OFFSETOF VM.globals
     mov x0, x19
 	mov	x1, x20
 	bl	_tableSet

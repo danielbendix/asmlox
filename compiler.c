@@ -88,6 +88,36 @@ Parser parser;
 Compiler *current = NULL;
 ClassCompiler *currentClass = NULL;
 
+struct {
+    int capacity;
+    int count;
+    ObjFunction **functions;
+    size_t combinedSize;
+} compiledFunctions = {0, 0, NULL, 0};
+
+static void pushCompiledFunction(ObjFunction *function)
+{
+    if (compiledFunctions.capacity < compiledFunctions.count + 1) {
+        int oldCapacity = compiledFunctions.capacity;
+        compiledFunctions.capacity = GROW_CAPACITY(oldCapacity);
+        compiledFunctions.functions = GROW_ARRAY(ObjFunction *, compiledFunctions.functions, oldCapacity, compiledFunctions.capacity);
+    }
+
+    compiledFunctions.functions[compiledFunctions.count] = function;
+    compiledFunctions.count++;
+    compiledFunctions.combinedSize += function->chunk.count * sizeof(typeof(*function->chunk.code));
+}
+
+static void freeCompiledFunctions()
+{
+    if (compiledFunctions.functions) {
+        free(compiledFunctions.functions);
+        compiledFunctions.count = 0;
+        compiledFunctions.capacity = 0;
+        compiledFunctions.functions = NULL;
+    }
+}
+
 Chunk *compilingChunk;
 
 static Chunk *currentChunk()
@@ -273,6 +303,10 @@ static ObjFunction *endCompiler()
         disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : "<script>");
     }
 #endif
+
+    pushCompiledFunction(function);
+
+    // Then set extent of JIT code.
 
     // Kludge start
     void *space = mmap(NULL, sizeof(uint32_t) * function->chunk.count, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -1106,7 +1140,7 @@ static void statement()
     }
 }
 
-ObjFunction *compile(const char *source)
+ObjFunction *compile(const char *source, bool isREPL)
 {
     initScanner(source);
     Compiler compiler;
@@ -1122,7 +1156,50 @@ ObjFunction *compile(const char *source)
 
     consume(TOKEN_EOF, "Expect end of expression.");
     ObjFunction *function = endCompiler();
-    return parser.hadError ? NULL : function;
+    
+    if (parser.hadError) {
+        return NULL;
+    }
+
+    size_t requiredSize = (compiledFunctions.combinedSize + JIT_RED_ZONE * compiledFunctions.count) * sizeof(uint32_t);
+
+    if (isREPL) {
+        assert(false);
+    } else {
+        void *address = mapMemory(requiredSize);
+        if (!address) {
+            error("Unable to map memory for JIT code");
+            return NULL;
+        }
+
+        uint32_t *current = address;
+
+        for (int i = 0; i < compiledFunctions.count; i++) {
+            ObjFunction *function = compiledFunctions.functions[i];
+            memcpy(current, function->chunk.code, sizeof(uint32_t) * function->chunk.count);
+            function->chunk.code = current;
+            function->chunk.isExecutable = true;
+            current = current + function->chunk.count;
+
+            // Write red zone.
+            memset(current, 0xFF, sizeof(uint32_t) * JIT_RED_ZONE);
+            current = current + JIT_RED_ZONE;
+        }
+
+        if (remapAsExecutable(address, requiredSize)) {
+            unmapMemory(address, requiredSize);
+            error("Unable to map memory for JIT code");
+            return NULL;
+        }
+
+        // We assume that no further code allocations are necessary,
+        // as only a single file is supported right now.
+        vm.code = address;
+        vm.codeEnd = (uint8_t *) address + requiredSize;
+        vm.nextCode = NULL;
+    }
+
+    return function;
 }
 
 void markCompilerRoots()

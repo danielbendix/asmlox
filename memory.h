@@ -26,4 +26,8 @@ void markValue(Value value);
 void collectGarbage();
 void freeObjects();
 
+void *mapMemory(size_t size);
+void unmapMemory(void *address, size_t size);
+int remapAsExecutable(void *address, size_t size);
+
 #endif

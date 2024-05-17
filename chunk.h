@@ -51,6 +51,7 @@ typedef struct {
     int *lines;
     ValueArray constants;
     int lastOp;
+    bool isExecutable;
 } Chunk;
 
 void initChunk(Chunk *chunk);

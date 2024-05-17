@@ -7,10 +7,12 @@ closure .req x19
 constants .req x20
 optable .req x21 
 
+.equ STACK_SLOT_SHIFT, 4
+
 _op_call:                               ; @op_call
 	.cfi_startproc
 ; %bb.0:
-    lsl x3, x2, #4 ; get the offset for the stack pointer
+    lsl x3, x2, STACK_SLOT_SHIFT ; get the offset for the stack pointer
     add x3, sp, x3
     ldp x0, x1, [x3]
     stp closure, constants, [sp, #-32]!
