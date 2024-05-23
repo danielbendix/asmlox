@@ -1,7 +1,7 @@
 *.swp
 *.vim
-clox
-clox.dSYM
+asmlox
+asmlox.dSYM
 
 prof.data
 trace.pdf

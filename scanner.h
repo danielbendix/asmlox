@@ -1,5 +1,5 @@
-#ifndef clox_scanner_h
-#define clox_scanner_h
+#ifndef asmlox_scanner_h
+#define asmlox_scanner_h
 
 typedef enum {
 	// Single-character tokens.

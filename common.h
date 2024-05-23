@@ -1,5 +1,5 @@
-#ifndef clox_common_h
-#define clox_common_h
+#ifndef asmlox_common_h
+#define asmlox_common_h
 
 #include <stdbool.h>
 #include <stddef.h>

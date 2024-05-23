@@ -191,12 +191,12 @@ static bool match(TokenType type)
 
 static void emitByte(uint8_t byte)
 {
-    assert(false && "Attempting to emit clox bytecode");
+    assert(false && "Attempting to emit lox bytecode");
 }
 
 static void emitBytes(uint8_t byte1, uint8_t byte2)
 {
-    assert(false && "Attempting to emit clox bytecode");
+    assert(false && "Attempting to emit lox bytecode");
 }
 
 static void emitLoop_(int loopStart)
