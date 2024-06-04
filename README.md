@@ -23,6 +23,10 @@ The items that currently need to be implemented are:
 - Garbage collection of code segment in REPL mode
 - Implementation of upvalues
 - Implementation of classes
+- Native functions
+
+Beyond full feature parity with `clox`, I'd like to implement the following:
+- Full support for calls back and forth between asmlox and native code.
 
 ## Technical details
 
