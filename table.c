@@ -141,7 +141,6 @@ ObjString *tableFindString(Table *table, const char *chars, int length, uint32_t
     }
 }
 
-// TODO: WTF is going on here? This could just be done before a string is released.
 // TODO: Implement removal on free, and compare using a benchmark that creates a 
 // a lot of strings, and makes them unreachable again, using GC stress setting.
 // In a large table, removing a single entry should be a lot faster.
