@@ -2,7 +2,7 @@
 
 # asmlox
 
-The **[Lox programming language]** compiling to ARM64 assembly.
+The **[Lox programming language]** compiling to ARM64 machine code.
 
 </div>
 
