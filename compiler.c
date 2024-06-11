@@ -306,24 +306,6 @@ static ObjFunction *endCompiler()
 
     pushCompiledFunction(function);
 
-    // Then set extent of JIT code.
-
-    // Kludge start
-    void *space = mmap(NULL, sizeof(uint32_t) * function->chunk.count, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-
-    //printf("%s\n", function->name != NULL ? function->name->chars : "main");
-    char path[100] = "dumps/";
-    strcpy(path + 6, function->name != NULL ? function->name->chars : "main");
-    FILE *f = fopen(path, "wb");
-    fwrite(function->chunk.code, sizeof(uint32_t), function->chunk.count, f);
-    fclose(f);
-
-    memcpy(space, function->chunk.code, sizeof(uint32_t) * function->chunk.count);
-    reallocate(function->chunk.code, sizeof(uint32_t) * function->chunk.capacity, 0);
-    mprotect(space, sizeof(uint32_t) * function->chunk.count, PROT_EXEC);
-    function->chunk.code = space;
-    // Kludge end
-
     current = current->enclosing;
     return function;
 }
