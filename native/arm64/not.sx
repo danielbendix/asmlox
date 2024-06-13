@@ -1,0 +1,20 @@
+$SECTION(CODE)
+$FUNCTION(op_not)
+	.cfi_startproc
+// %bb.0:
+    // TODO: Can we assume that the single value will be loaded into x0 and x1 here?
+    ldp x0, x1, [sp, #0]
+
+	cmp	w0, #1
+	ccmp	w1, #0, #0, eq
+	ccmp	w0, #0, #4, ne
+	cset	w1, eq
+	mov	w0, #1
+    
+    stp x0, x1, [sp, #0]
+
+	ret
+$END_FUNCTION(op_not)
+	.cfi_endproc
+                                        // -- End function
+$FOOTER()
