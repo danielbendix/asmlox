@@ -25,16 +25,22 @@ class Platform:
     def load_string(self, *args: str) -> list[str]:
         raise Exception("Not implemented")
 
+    def load_from_got(self, *args: str) -> list[str]:
+        raise Exception("Not implemented")
+
+    def call(self, *args: str) -> list[str]:
+        raise Exception("Not implemented")
+
     def footer(self, *args: str) -> list[str]:
         raise Exception("Not implemented")
 
 class MacOS(Platform):
     def __init__(self):
-        self.string_label_idx = 0
+        self.data_label_idx = 0
 
-    def get_string_idxs(self) -> Tuple[int, int]:
-        result = (self.string_label_idx, self.string_label_idx + 1)
-        self.string_label_idx += 2
+    def get_data_label_idxs(self) -> Tuple[int, int]:
+        result = (self.data_label_idx, self.data_label_idx + 1)
+        self.data_label_idx += 2
         return result
 
     def section(self, *args: str) -> list[str]:
@@ -74,7 +80,7 @@ class MacOS(Platform):
     def load_string(self, *args: str) -> list[str]:
         register = args[0]
         label = args[1]
-        (label_idx_0, label_idx_1) = self.get_string_idxs()
+        (label_idx_0, label_idx_1) = self.get_data_label_idxs()
         label_0 = f"Lloh{label_idx_0}"
         label_1 = f"Lloh{label_idx_1}"
         return [
@@ -83,6 +89,27 @@ class MacOS(Platform):
             f"{label_1}:\n",
             f"    add {register}, {register}, {label}@PAGEOFF\n",
             f"    .loh AdrpAdd    {label_0}, {label_1}\n",
+        ]
+
+    def load_from_got(self, *args: str) -> list[str]:
+        register = args[0]
+        name = args[1]
+        (label_idx_0, label_idx_1) = self.get_data_label_idxs()
+        label_0 = f"Lloh{label_idx_0}"
+        label_1 = f"Lloh{label_idx_1}"
+        return [
+            f"{label_0}:\n",
+            f"    adrp    {register}, _{name}@GOTPAGE\n",
+            f"{label_1}:\n",
+            f"    ldr {register}, [{register}, _{name}@GOTPAGEOFF]\n",
+            f"    .loh AdrpAdd    {label_0}, {label_1}\n",
+        ]
+
+    def call(self, *args: str) -> list[str]:
+        instruction = args[0]
+        symbol = args[1]
+        return [
+            f"    {instruction} _{symbol}\n",
         ]
 
     def footer(self, *args: str):
@@ -117,7 +144,7 @@ class Linux(Platform):
         label = f"Lfunc_{name}_end"
         return [
             f"{label}:\n",
-            f"    .size op_add, {label} - {name}\n",
+            f"    .size {name}, {label} - {name}\n",
         ]
 
     def string(self, *args: str) -> list[str]:
@@ -139,6 +166,21 @@ class Linux(Platform):
         return [
             f"    adrp    {register}, {label}\n",
             f"    add {register}, {register}, :lo12:{label}\n",
+        ]
+
+    def load_from_got(self, *args: str) -> list[str]:
+        register = args[0]
+        name = args[1]
+        return [
+            f"    adrp    {register}, :got:{name}\n",
+            f"    ldr     {register}, [{register}, :got_lo12:{name}]\n",
+        ]
+
+    def call(self, *args: str) -> list[str]:
+        instruction = args[0]
+        symbol = args[1]
+        return [
+            f"    {instruction} {symbol}\n",
         ]
 
     def footer(self, *args: str) -> list[str]:
@@ -175,6 +217,10 @@ def process_directive(line, platform):
             return platform.string(*params)
         case 'LOAD_STRING':
             return platform.load_string(*params)
+        case 'LOAD_FROM_GOT':
+            return platform.load_from_got(*params)
+        case 'CALL':
+            return platform.call(*params)
         case 'FOOTER':
             return platform.footer(*params)
     

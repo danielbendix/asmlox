@@ -1,11 +1,10 @@
-	.section	__TEXT,__text,regular,pure_instructions
-	.build_version macos, 14, 0	sdk_version 14, 0
-	.globl	_op_not                         ; -- Begin function op_not
-	.p2align	2
-_op_not:                                ; @op_not
+    .section __TEXT,__text,regular,pure_instructions
+    .globl _op_not
+    .p2align 2
+_op_not:
 	.cfi_startproc
-; %bb.0:
-    ; TODO: Can we assume that the single value will be loaded into x0 and x1 here?
+// %bb.0:
+    // TODO: Can we assume that the single value will be loaded into x0 and x1 here?
     ldp x0, x1, [sp, #0]
 
 	cmp	w0, #1
@@ -18,5 +17,5 @@ _op_not:                                ; @op_not
 
 	ret
 	.cfi_endproc
-                                        ; -- End function
+                                        // -- End function
 .subsections_via_symbols

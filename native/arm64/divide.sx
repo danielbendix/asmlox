@@ -1,7 +1,5 @@
-    .section __TEXT,__text,regular,pure_instructions
-    .globl _op_divide
-    .p2align 2
-_op_divide:
+$SECTION(CODE)	
+$FUNCTION(op_divide)
 	.cfi_startproc
 // %bb.0:
 	cmp	w0, w2
@@ -24,16 +22,12 @@ LBB0_2:
 	.cfi_def_cfa w29, 16
 	.cfi_offset w30, -8
 	.cfi_offset w29, -16
-Lloh0:
-    adrp    x0, l_.str@PAGE
-Lloh1:
-    add x0, x0, l_.str@PAGEOFF
-    .loh AdrpAdd    Lloh0, Lloh1
-    bl _runtimeError
+    $LOAD_STRING(x0, l_.str)
+    $CALL(bl, runtimeError)
+$END_FUNCTION(op_divide)
 	.cfi_endproc
                                         // -- End function
-    .section	__TEXT,__cstring,cstring_literals
-l_.str:
-    .asciz "Operands must be numbers."
+$SECTION(STRINGS)
+$STRING(l_.str, "Operands must be numbers.")
 
-.subsections_via_symbols
+$FOOTER()
