@@ -64,7 +64,6 @@ LBB2_2:
 	mov	x1, x20
     $CALL(bl, tableDelete)
     $LOAD_STRING(x0, l_.str)
-	add	x0, x0, l_.str@PAGEOFF
     $CALL(bl, runtimeError)
 $END_FUNCTION(op_set_global)
 	.cfi_endproc

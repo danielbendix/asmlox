@@ -66,13 +66,11 @@ $END_FUNCTION(call_closure_no_args)
 
 // InterpretResult start_script(ObjClosure *closure)
 $FUNCTION(start_script)
-	adrp	x9, _vm@GOTPAGE
-	ldr	x9, [x9, _vm@GOTPAGEOFF]
+    $LOAD_FROM_GOT(x9, vm)
 	str	lr, [x9] // OFFSETOF VM.mainReturnAddress
     mov x9, #0
 
-	adrp	x8, _OP_TABLE@GOTPAGE
-	ldr	x8, [x8, _OP_TABLE@GOTPAGEOFF]
+    $LOAD_FROM_GOT(x8, OP_TABLE)
 
     stp optable, x22, [sp, #-32]!
     stp x29, x30, [sp, #16]
