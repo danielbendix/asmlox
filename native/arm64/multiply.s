@@ -24,7 +24,7 @@ _op_multiply:
 
 	ret
 LBB0_2:
-	stp	x29, x30, [sp, #-16]!           ; 16-byte Folded Spill
+	stp	x29, x30, [sp, #-16]!           // 16-byte Folded Spill
 	.cfi_def_cfa_offset 16
 	mov	x29, sp
 	.cfi_def_cfa w29, 16
@@ -37,7 +37,7 @@ Lloh1:
     .loh AdrpAdd    Lloh0, Lloh1
     bl _runtimeError
 	.cfi_endproc
-                                        ; -- End function
+                                        // -- End function
     .section	__TEXT,__cstring,cstring_literals
 l_.str:
     .asciz "Operands must be numbers."

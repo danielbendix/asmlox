@@ -7,12 +7,12 @@ optable .req x21
 $SECTION(CODE)
 $FUNCTION(op_call)
 	.cfi_startproc
-; %bb.0:
-    lsl x3, x2, STACK_SLOT_SHIFT ; get the offset for the stack pointer
+// %bb.0:
+    lsl x3, x2, STACK_SLOT_SHIFT // get the offset for the stack pointer
     add x3, sp, x3
     ldp x0, x1, [x3]
     stp closure, constants, [sp, #-32]!
-	stp	x29, x30, [sp, #16]           ; 16-byte Folded Spill
+	stp	x29, x30, [sp, #16]           // 16-byte Folded Spill
 	.cfi_def_cfa_offset 32
 	add	x29, sp, #16
 	.cfi_def_cfa w29, 16
@@ -20,20 +20,20 @@ $FUNCTION(op_call)
 	.cfi_offset w29, -16
 	cmp	w0, #3
 	b.ne	LBB0_4
-; %bb.1:
+// %bb.1:
 	ldr	w8, [x1]
 	cmp	w8, #2
 	b.ne	LBB0_4
-; %bb.2:
-	ldr	x8, [x1, #16] ; load function pointer
-	ldr	w9, [x8, #16] ; load arity
+// %bb.2:
+	ldr	x8, [x1, #16] // load function pointer
+	ldr	w9, [x8, #16] // load arity
 	cmp	w9, w2
 	b.ne	LBB0_5
-; %bb.3:
-	ldr	x2, [x8, #32] ; load code
-	ldr	constants, [x8, #56] ; load constant table
+// %bb.3:
+	ldr	x2, [x8, #32] // load code
+	ldr	constants, [x8, #56] // load constant table
     mov closure, x1
-	;ldp	x29, x30, [sp], #16             ; 16-byte Folded Reload
+	//ldp	x29, x30, [sp], #16             // 16-byte Folded Reload
 	br	x2
 LBB0_4:
     $LOAD_STRING(x0, l_.str)
@@ -43,7 +43,7 @@ LBB0_5:
     $CALL(bl, runtimeError)
 $END_FUNCTION(op_call)
 	.cfi_endproc
-                                        ; -- End function
+                                        // -- End function
 $SECTION(STRINGS)
 $STRING(l_.str, "Value is not callable.")
 $STRING(l_.str.1, "Wrong arity for call.")
