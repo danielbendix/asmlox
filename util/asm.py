@@ -264,8 +264,8 @@ def detect_platform() -> Platform:
 
     uname = platform.uname()
 
-    if uname.machine != 'arm64':
-        raise Exception("Machine is not arm64.")
+    if not uname.machine in {'arm64', 'aarch64'}:
+        raise Exception(f"Machine '{uname.machine}' is not supported.")
 
     match uname.system:
         case 'Darwin':
