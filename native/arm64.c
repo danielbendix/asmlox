@@ -6,6 +6,12 @@
 
 #define TO_STACK_SLOT(n) ((n) << 4)
 
+static inline
+uint64_t bitcast_double_to_uint64(double d)
+{
+    return *((uint64_t *) &d);
+}
+
 // Instruction bit masks with parameters set to zero
 
 #define LDR_UNSIGNED_OFFSET 0xF9400000
@@ -16,6 +22,8 @@
 #define STP_PRE_INDEX 0xA9800000
 
 #define MOV_IMMEDIATE 0xD2800000
+
+#define MOVZ_IMMEDIATE 0xD2800000
 
 #define ADD_IMMEDIATE 0x91000000
 #define SUB_IMMEDIATE 0xD1000000
@@ -77,6 +85,12 @@ static inline
 uint32_t mov_immediate(uint32_t rd, uint32_t immediate)
 {
     return MOV_IMMEDIATE | rd | ((immediate & 0xFFFF) << 5);
+}
+
+static inline
+uint32_t movz_immediate(uint32_t rd, uint32_t immediate, uint32_t shift16)
+{
+    return MOVZ_IMMEDIATE | rd | ((immediate & 0xFFFF) << 5) | ((shift16 & 0x3) << 21);
 }
 
 static inline
@@ -227,20 +241,23 @@ GenResult emitSetGlobal(Chunk *chunk, int line, uint32_t op, uint32_t nameIndex)
 GenResult emitNil(Chunk *chunk, int line)
 {
     WRITE(stp_pre_index(XZR, XZR, SP, -2));
+    WRITE(mov_immediate(0, VAL_NIL));
     return GEN_OK;
 }
 
 GenResult emitFalse(Chunk *chunk, int line)
 {
-    WRITE(mov_immediate(15, 1));
-    WRITE(stp_pre_index(15, XZR, SP, -2));
+    WRITE(mov_immediate(0, VAL_BOOL));
+    WRITE(stp_pre_index(0, XZR, SP, -2));
+    WRITE(mov_immediate(1, 0));
     return GEN_OK;
 }
 
 GenResult emitTrue(Chunk *chunk, int line)
 {
-    WRITE(mov_immediate(15, 1));
-    WRITE(stp_pre_index(15, 15, SP, -2));
+    WRITE(mov_immediate(0, VAL_BOOL));
+    WRITE(stp_pre_index(0, 0, SP, -2));
+    WRITE(mov_immediate(1, 1));
     return GEN_OK;
 }
 
@@ -248,6 +265,31 @@ GenResult emitPop(Chunk *chunk, int line, uint32_t n)
 {
     WRITE(add_immediate(SP, SP, TO_STACK_SLOT(n)));
     return GEN_OK;
+}
+
+bool emitNumberInline(Chunk *chunk, int line, double number) 
+{
+    uint64_t bits = bitcast_double_to_uint64(number);
+
+    if (bits == 0) {
+        WRITE(mov_immediate(0, VAL_NUMBER));
+        WRITE(mov_immediate(1, 0));
+        WRITE(stp_pre_index(0, 1, SP, -2));
+        return true;
+    }
+
+    // We need 3 groups of 16 zero bits at either end.
+    int leading = __builtin_clzl(bits) >> 4;
+    int trailing = __builtin_ctzl(bits) >> 4;
+
+    if (leading + trailing == 3) {
+        WRITE(mov_immediate(0, VAL_NUMBER));
+        WRITE(movz_immediate(1, bits >> (trailing << 4), trailing));
+        WRITE(stp_pre_index(0, 1, SP, -2));
+        return true;
+    }
+
+    return false;
 }
 
 // This will use a lookup table for ops, so that functions are movable.

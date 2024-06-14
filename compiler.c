@@ -608,7 +608,9 @@ static void grouping(bool canAssign)
 static void number(bool canAssign)
 {
     double value = strtod(parser.previous.start, NULL);
-    emitConstant(NUMBER_VAL(value));
+    if (!emitNumberInline(CURRENT, value)) {
+        emitConstant(NUMBER_VAL(value));
+    }
 }
 
 static void string(bool canAssign)

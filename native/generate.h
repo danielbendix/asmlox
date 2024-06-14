@@ -25,6 +25,7 @@ GenResult emitSetGlobal(Chunk *chunk, int line, uint32_t op, uint32_t nameIndex)
 GenResult emitNil(Chunk *chunk, int line);
 GenResult emitFalse(Chunk *chunk, int line);
 GenResult emitTrue(Chunk *chunk, int line);
+bool emitNumberInline(Chunk *chunk, int line, double number);
 
 GenResult emitBinary(Chunk *chunk, int line, uint32_t op);
 GenResult emitUnary(Chunk *chunk, int line, uint32_t op);
