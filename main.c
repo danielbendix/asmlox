@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <readline/readline.h>
+#include <readline/history.h>
 
 #include "common.h"
 #include "chunk.h"

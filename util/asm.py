@@ -126,7 +126,7 @@ class Linux(Platform):
             case "CODE":
                 section = "    .text\n"
             case "STRINGS":
-                section = '    .section	.rodata.str1.1,"aMs",@progbits,1\n'
+                section = '    .section	.rodata.str1.1,"aMS",@progbits,1\n'
             case _:
                 raise Exception(f"Unknown section type '{section_type}'.")
         return [section]
