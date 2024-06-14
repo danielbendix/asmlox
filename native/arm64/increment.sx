@@ -20,7 +20,7 @@ LBB0_2:
 	.cfi_offset w30, -8
 	.cfi_offset w29, -16
     $LOAD_STRING(x0, l_.str)
-	bl	_runtimeError
+    $CALL(bl, runtimeError)
 $END_FUNCTION(op_increment)
 	.cfi_endproc
                                         // -- End function

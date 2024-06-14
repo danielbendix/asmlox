@@ -26,7 +26,7 @@ Lloh0:
 Lloh1:
     add x0, x0, l_.str@PAGEOFF
     .loh AdrpAdd    Lloh0, Lloh1
-	bl	_runtimeError
+    bl _runtimeError
 	.cfi_endproc
                                         // -- End function
     .section	__TEXT,__cstring,cstring_literals

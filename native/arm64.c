@@ -112,7 +112,7 @@ uint32_t branch_register(uint32_t rn)
 static inline
 uint32_t branch_link_register(uint32_t rn)
 {
-    return BRANCH_LINK_REGISTER | (rn << 5);
+    return BRANCH_LINK_REGISTER | ((rn & 0x1F) << 5);
 }
 
 #define WRITE(op) writeChunk(chunk, op, line);
