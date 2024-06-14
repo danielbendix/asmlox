@@ -1,7 +1,5 @@
-    .section __TEXT,__text,regular,pure_instructions
-    .globl _op_equal
-    .p2align 2
-_op_equal:
+$SECTION(CODE)
+$FUNCTION(op_equal)
 	.cfi_startproc
 // %bb.0:
     ldp x0, x1, [sp, #16]
@@ -26,6 +24,7 @@ _op_equal:
 	mov	w0, #1
     stp x0, x1, [sp, #16]!
 	ret
+$END_FUNCTION(op_equal)
 	.cfi_endproc
                                         // -- End function
-.subsections_via_symbols
+$FOOTER()

@@ -1,4 +1,4 @@
-
+// Just an example of operations. Actual instructions are generated at runtime.
 load_constant_up_to_31:
     ldp x0, x1, [x0, #16] ; replace with immediate
     stp x0, x1, [sp, #-16]!

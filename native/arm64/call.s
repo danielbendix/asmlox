@@ -1,15 +1,13 @@
-	.section	__TEXT,__text,regular,pure_instructions
-	.build_version macos, 14, 0	sdk_version 14, 0
-	.globl	_op_call                        ; -- Begin function op_call
-	.p2align	2
-
 closure .req x19
 constants .req x20
 optable .req x21 
 
 .equ STACK_SLOT_SHIFT, 4
 
-_op_call:                               ; @op_call
+    .section __TEXT,__text,regular,pure_instructions
+    .globl _op_call
+    .p2align 2
+_op_call:
 	.cfi_startproc
 ; %bb.0:
     lsl x3, x2, STACK_SLOT_SHIFT ; get the offset for the stack pointer
@@ -41,25 +39,24 @@ _op_call:                               ; @op_call
 	br	x2
 LBB0_4:
 Lloh0:
-	adrp	x0, l_.str@PAGE
+    adrp    x0, l_.str@PAGE
 Lloh1:
-	add	x0, x0, l_.str@PAGEOFF
-	bl	_runtimeError
+    add x0, x0, l_.str@PAGEOFF
+    .loh AdrpAdd    Lloh0, Lloh1
+    bl _runtimeError
 LBB0_5:
 Lloh2:
-	adrp	x0, l_.str.1@PAGE
+    adrp    x0, l_.str.1@PAGE
 Lloh3:
-	add	x0, x0, l_.str.1@PAGEOFF
-	bl	_runtimeError
-	.loh AdrpAdd	Lloh0, Lloh1
-	.loh AdrpAdd	Lloh2, Lloh3
+    add x0, x0, l_.str.1@PAGEOFF
+    .loh AdrpAdd    Lloh2, Lloh3
+    bl _runtimeError
 	.cfi_endproc
                                         ; -- End function
-	.section	__TEXT,__cstring,cstring_literals
-l_.str:                                 ; @.str
-	.asciz	"Value is not callable."
-
-l_.str.1:                               ; @.str.1
-	.asciz	"Wrong arity for call."
+    .section	__TEXT,__cstring,cstring_literals
+l_.str:
+    .asciz "Value is not callable."
+l_.str.1:
+    .asciz "Wrong arity for call."
 
 .subsections_via_symbols

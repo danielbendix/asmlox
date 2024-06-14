@@ -1,7 +1,5 @@
-    .section __TEXT,__text,regular,pure_instructions
-    .globl _op_print
-    .p2align 2
-_op_print:
+$SECTION(CODE)
+$FUNCTION(op_print)
 	.cfi_startproc
 // %bb.0:
     // At this point, the value will have been put on the stack,
@@ -12,10 +10,11 @@ _op_print:
 	.cfi_def_cfa w29, 16
 	.cfi_offset w30, -8
 	.cfi_offset w29, -16
-    bl _printValue
+    $CALL(bl, printValue)
 	mov	w0, #10
 	ldp	x29, x30, [sp], #32             // 16-byte Folded Reload
-    b _putchar
+	$CALL(b, putchar)
+$END_FUNCTION(op_print)
 	.cfi_endproc
                                         // -- End function
-.subsections_via_symbols
+$FOOTER()

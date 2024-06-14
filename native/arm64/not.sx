@@ -1,7 +1,5 @@
-    .section __TEXT,__text,regular,pure_instructions
-    .globl _op_not
-    .p2align 2
-_op_not:
+$SECTION(CODE)
+$FUNCTION(op_not)
 	.cfi_startproc
 // %bb.0:
     // TODO: Can we assume that the single value will be loaded into x0 and x1 here?
@@ -16,6 +14,7 @@ _op_not:
     stp x0, x1, [sp, #0]
 
 	ret
+$END_FUNCTION(op_not)
 	.cfi_endproc
                                         // -- End function
-.subsections_via_symbols
+$FOOTER()
