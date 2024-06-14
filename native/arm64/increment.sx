@@ -1,7 +1,5 @@
-    .section __TEXT,__text,regular,pure_instructions
-    .globl _op_increment
-    .p2align 2
-_op_increment:
+$SECTION(CODE)	
+$FUNCTION(op_increment)
 	.cfi_startproc
     ldp x0, x1, [sp]
 // %bb.0:
@@ -21,16 +19,12 @@ LBB0_2:
 	.cfi_def_cfa w29, 16
 	.cfi_offset w30, -8
 	.cfi_offset w29, -16
-Lloh0:
-    adrp    x0, l_.str@PAGE
-Lloh1:
-    add x0, x0, l_.str@PAGEOFF
-    .loh AdrpAdd    Lloh0, Lloh1
+    $LOAD_STRING(x0, l_.str)
 	bl	_runtimeError
+$END_FUNCTION(op_increment)
 	.cfi_endproc
                                         // -- End function
-    .section	__TEXT,__cstring,cstring_literals
-l_.str:
-    .asciz "Operands must be a number."
+$SECTION(STRINGS)
+$STRING(l_.str, "Operands must be a number.")
 
-.subsections_via_symbols
+$FOOTER()
