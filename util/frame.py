@@ -6,17 +6,20 @@ from typing import Optional
 
 import lldb
 
+
 class LoxValueType(IntEnum):
     VAL_NIL = 0
     VAL_BOOL = 1
     VAL_NUMBER = 2
     VAL_OBJ = 3
 
+
 class LoxDebugException(Exception):
     message: str
 
     def __init__(self, message: str):
         self.message = message
+
 
 def check_error(error):
     if error.IsValid() and error.Fail():
@@ -38,7 +41,9 @@ def get_process(debugger):
     return process
 
 
-def print_lox_frame(debugger, frame_index: Optional[int] = None, thread_index: Optional[int] = None):
+def print_lox_frame(
+    debugger, frame_index: Optional[int] = None, thread_index: Optional[int] = None
+):
     process = get_process(debugger)
 
     def read_unsigned(address, count: int):
@@ -63,7 +68,7 @@ def print_lox_frame(debugger, frame_index: Optional[int] = None, thread_index: O
         return result
 
     if thread_index is not None:
-        if (thread_index >= process.GetNumThreads()):
+        if thread_index >= process.GetNumThreads():
             raise LoxDebugException("Thread index is out of bounds.")
         thread = process.threads[thread_index]
     else:
@@ -82,11 +87,11 @@ def print_lox_frame(debugger, frame_index: Optional[int] = None, thread_index: O
     if frame_index == 0:
         # We're inspecting the top frame, so read values from frame pointer to stack pointer.
         sp = frame.sp
-        last= sp
+        last = sp
     else:
         frame_below = thread.frames[frame_index - 1]
-        
-        if frame_index == 1 and fp == frame_below.fp: 
+
+        if frame_index == 1 and fp == frame_below.fp:
             # Bottom frame has not spilled a frame and link pointer.
             # asmlox functions can only call functions that will store values
             # before spilling a frame and link pointer.
@@ -108,13 +113,15 @@ def print_lox_frame(debugger, frame_index: Optional[int] = None, thread_index: O
             elif value_type == LoxValueType.VAL_BOOL:
                 value_description = "true" if read_unsigned(pointer + 8, 1) else "false"
             elif value_type == LoxValueType.VAL_NUMBER:
-                value_description = str(struct.unpack('@d', read_data(pointer + 8, 8))[0])
+                value_description = str(
+                    struct.unpack("@d", read_data(pointer + 8, 8))[0]
+                )
             elif value_type == LoxValueType.VAL_OBJ:
                 object_pointer = read_pointer(pointer + 8)
-                value_description = ("OBJECT " + hex(object_pointer))
+                value_description = "OBJECT " + hex(object_pointer)
 
             print(debug_string_header + value_description)
-            
+
         except LoxDebugException:
             pass
 
@@ -123,8 +130,8 @@ def print_lox_frame(debugger, frame_index: Optional[int] = None, thread_index: O
 
 def print_lox_frame_command(debugger, command, result, dictionary):
     """
-Print out the values in an asmlox frame.
-Usage: lox_frame [frame] [thread]
+    Print out the values in an asmlox frame.
+    Usage: lox_frame [frame] [thread]
     """
 
     args = [int(arg) for arg in shlex.split(command)]
@@ -137,8 +144,10 @@ Usage: lox_frame [frame] [thread]
         print_lox_frame(debugger, args[0], args[1])
     else:
         result.PutCString("Usage: lox_frame [frame] [thread]")
-    
+
 
 def __lldb_init_module(debugger, dict):
-    debugger.HandleCommand('command script add -f frame.print_lox_frame_command lox_frame')
+    debugger.HandleCommand(
+        "command script add -f frame.print_lox_frame_command lox_frame"
+    )
     print("The 'lox_frame' python command has been installed and is ready for use.")
