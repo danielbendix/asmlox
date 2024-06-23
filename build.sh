@@ -38,9 +38,14 @@ native/arm64/subtract.s \
 native/arm64/multiply.s \
 native/arm64/divide.s \
 native/arm64/increment.s \
-native/arm64/less.s \
 native/arm64/equal.s \
+native/arm64/not_equal.s \
+native/arm64/less.s \
+native/arm64/less_equal.s \
+native/arm64/greater.s \
+native/arm64/greater_equal.s \
 native/arm64/not.s \
+native/arm64/negate.s \
 native/arm64/global.s \
 native/arm64/closure.s \
 native/arm64/call.s \

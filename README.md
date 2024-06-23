@@ -11,16 +11,14 @@ The **[Lox programming language]** compiling to ARM64 machine code.
 The project currently has support for:
 - Global and local variables
 - branching, i.e. `if-else`, `while`, and `for`
-- Function calls.
-- Most unary and binary operators
-- Garbage collection (except for code segments in REPL mode)
+- Function calls
+- All unary and binary operators.
+- Garbage collection
 
 ## TODO
 
 The items that currently need to be implemented are:
 
-- Remaining binary and unary operators
-- Garbage collection of code segment in REPL mode
 - Implementation of upvalues
 - Implementation of classes
 - Native functions

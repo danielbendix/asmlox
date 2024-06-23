@@ -554,12 +554,12 @@ static void binary(bool canAssign)
     parsePrecedence((Precedence)(rule->precedence + 1));
 
     switch (operatorType) {
-        case TOKEN_BANG_EQUAL:      emitBytes(OP_EQUAL, OP_NOT); break;
+        case TOKEN_BANG_EQUAL:      emitBinary(CURRENT, LOX_OP_NOT_EQUAL); break;
         case TOKEN_EQUAL_EQUAL:     emitBinary(CURRENT, LOX_OP_EQUAL); break;
-        case TOKEN_GREATER:         emitByte(OP_GREATER); break;
-        case TOKEN_GREATER_EQUAL:   emitBytes(OP_LESS, OP_NOT); break;
+        case TOKEN_GREATER:         emitBinary(CURRENT, LOX_OP_GREATER); break;
+        case TOKEN_GREATER_EQUAL:   emitBinary(CURRENT, LOX_OP_GREATER_EQUAL); break;
         case TOKEN_LESS:            emitBinary(CURRENT, LOX_OP_LESS); break;
-        case TOKEN_LESS_EQUAL:      emitBytes(OP_GREATER, OP_NOT); break;
+        case TOKEN_LESS_EQUAL:      emitBinary(CURRENT, LOX_OP_LESS_EQUAL); break;
         case TOKEN_PLUS:            emitBinary(CURRENT, LOX_OP_ADD); break;
         case TOKEN_MINUS:           emitBinary(CURRENT, LOX_OP_SUBTRACT); break;
         case TOKEN_STAR:            emitBinary(CURRENT, LOX_OP_MULTIPLY); break;
@@ -736,7 +736,7 @@ static void unary(bool canAssign)
     // Emit the operator instruction.
     switch (operatorType) {
         case TOKEN_BANG: emitUnary(CURRENT, LOX_OP_NOT); break;
-        case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+        case TOKEN_MINUS: emitUnary(CURRENT, LOX_OP_NEGATE); break;
         default: return; // unreachable
     }
 }

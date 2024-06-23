@@ -1,0 +1,31 @@
+$SECTION(CODE)	
+$FUNCTION(op_not_equal)
+	.cfi_startproc
+// %bb.0:
+    ldp x0, x1, [sp, #16]
+    ldp x2, x3, [sp]
+	fmov	d0, x1
+	fmov	d1, x3
+	mov	w8, #1
+	cmp	x1, x3
+	cset	w9, eq
+	fcmp	d0, d1
+	cset	w10, eq
+	cmp	w1, w3
+	cset	w11, eq
+	cmp	w0, #1
+	csel	w8, w8, w11, ne
+	cmp	w0, #2
+	csel	w8, w10, w8, eq
+	cmp	w0, #3
+	csel	w8, w9, w8, eq
+	cmp	w0, w2
+	csel	w8, wzr, w8, ne
+	eor	w1, w8, #0x1
+	mov	w0, #1
+    stp x0, x1, [sp, #16]!
+	ret
+$END_FUNCTION(op_not_equal)
+	.cfi_endproc
+                                        // -- End function
+$FOOTER()

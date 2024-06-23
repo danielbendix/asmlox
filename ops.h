@@ -14,8 +14,11 @@ enum LOX_OP {
     LOX_OP_INCREMENT,
 
     LOX_OP_EQUAL,
+    LOX_OP_NOT_EQUAL,
     LOX_OP_LESS,
+    LOX_OP_LESS_EQUAL,
     LOX_OP_GREATER,
+    LOX_OP_GREATER_EQUAL,
 
     // Unary (1 -> 1)
     LOX_OP_NOT,
@@ -47,9 +50,14 @@ Value op_divide(Value v1, Value v2);
 Value op_increment(Value value);
 
 Value op_equal(Value v1, Value v2);
+Value op_not_equal(Value v1, Value v2);
 Value op_less(Value v1, Value v2);
+Value op_less_equal(Value v1, Value v2);
+Value op_greater(Value v1, Value v2);
+Value op_greater_equal(Value v1, Value v2);
 
 Value op_not(Value value);
+Value op_negate(Value value);
 
 void op_condition(Value value);
 

@@ -26,9 +26,14 @@ const void *OP_TABLE[LOX_OP_COUNT] = {
     [LOX_OP_INCREMENT] = (void *) op_increment,
 
     [LOX_OP_EQUAL] = (void *) op_equal,
+    [LOX_OP_NOT_EQUAL] = (void *) op_not_equal,
     [LOX_OP_LESS] = (void *) op_less,
+    [LOX_OP_LESS_EQUAL] = (void *) op_less_equal,
+    [LOX_OP_GREATER] = (void *) op_greater,
+    [LOX_OP_GREATER_EQUAL] = (void *) op_greater_equal,
 
     [LOX_OP_NOT] = (void *) op_not,
+    [LOX_OP_NEGATE] = (void *) op_negate,
 
     [LOX_OP_PRINT] = (void *) op_print,
 

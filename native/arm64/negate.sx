@@ -1,19 +1,16 @@
-$SECTION(CODE)	
-$FUNCTION(op_less)
+$SECTION(CODE)
+$FUNCTION(op_negate)
 	.cfi_startproc
+    // TODO: Can we assume that the single value will be loaded into x0 and x1 here?
+    ldp x0, x1, [sp, #0]
 // %bb.0:
-    ldp x0, x1, [sp, #16]
-    ldp x2, x3, [sp]
-    cmp w0, #2
-    ccmp w0, w2, #0x0, eq
-    b.ne LBB0_2
+	cmp	w0, #2
+	b.ne	LBB0_2
 // %bb.1:
-	fmov	d0, x3
-	fmov	d1, x1
-	fcmp	d1, d0
-	cset	w1, mi
-	mov	w0, #1
-    stp x0, x1, [sp, #16]!
+	eor	x1, x1, #0x8000000000000000
+
+    str x1, [sp, #8]
+
 	ret
 LBB0_2:
 	stp	x29, x30, [sp, #-16]!           // 16-byte Folded Spill
@@ -24,10 +21,10 @@ LBB0_2:
 	.cfi_offset w29, -16
     $LOAD_STRING(x0, l_.str)
     $CALL(bl, runtimeError)
-$END_FUNCTION(op_less)
+$END_FUNCTION(op_negate)
 	.cfi_endproc
                                         // -- End function
 $SECTION(STRINGS)
-$STRING(l_.str, "Operands must be numbers.")
+$STRING(l_.str, "Operand must be a number.")
 
 $FOOTER()

@@ -1,0 +1,35 @@
+fun test_ops(a, b) {
+    print "a = ";
+    print a;
+    print "b = ";
+    print b;
+    print "a + b";
+    print a + b;
+    print "a - b";
+    print a - b;
+    print "a * b";
+    print a * b;
+    print "a / b";
+    print a / b;
+
+    print "-a";
+    print -a;
+    print "-b";
+    print -b;
+
+    print "a == b";
+    print a == b;
+    print "a != b";
+    print a != b;
+    print "a < b";
+    print a < b;
+    print "a <= b";
+    print a <= b;
+    print "a > b";
+    print a > b;
+    print "a >= b";
+    print a >= b;
+}
+
+test_ops(1, 2);
+test_ops(1, 1);
