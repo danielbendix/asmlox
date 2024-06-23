@@ -5,6 +5,8 @@
 #include "table.h"
 #include "value.h"
 
+#include <setjmp.h>
+
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
@@ -30,6 +32,10 @@ typedef struct {
     void *code;
     void *codeEnd;
     void *nextCode;
+
+    // Using setjmp/longjmp guarantees complete restoration of state,
+    // But time and memory usage could be better.
+    jmp_buf jmp;
 } VM;
 
 typedef enum {

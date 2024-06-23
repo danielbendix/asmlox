@@ -59,6 +59,12 @@ InterpretResult interpret(const char *source, bool isREPL)
     ObjClosure *closure = newClosure(function);
     popGCRoot();
     pushGCRoot(OBJ_VAL(closure));
-
-    return start_script(closure);
+    InterpretResult result;
+    if (setjmp(vm.jmp) == 0) {
+        result = start_script(closure);
+    } else {
+        result = INTERPRET_RUNTIME_ERROR;
+    }
+    popGCRoot();
+    return result;
 }

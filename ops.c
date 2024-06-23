@@ -12,12 +12,9 @@
 __attribute__((noreturn))
 void runtimeError(const char *string)
 {
-    // Run through frame pointers until we get back to the start.
-    // TOOD: Unwind stack to when vm was called.
-    // Maybe use setjmp/longjmp
-    printf("%s\n", string);
-    assert(false);
-    exit(1);
+    printf("Runtime error: %s\n", string);
+    // TODO: Backtrace
+    longjmp(vm.jmp, 1);
 }
 
 const void *OP_TABLE[LOX_OP_COUNT] = {
