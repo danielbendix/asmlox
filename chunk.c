@@ -18,8 +18,6 @@ void freeChunk(Chunk *chunk)
 {
     if (!chunk->isExecutable) {
         FREE_ARRAY(uint32_t, chunk->code, chunk->capacity);
-    } else {
-        // FIXME: Add to free list.
     }
 	FREE_ARRAY(int, chunk->lines, chunk->capacity);
 	freeValueArray(&chunk->constants);

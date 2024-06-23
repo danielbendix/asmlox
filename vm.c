@@ -9,6 +9,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "code.h"
 
 #include "ops.h"
 
@@ -30,9 +31,7 @@ void initVM()
     vm.initString = NULL;
     vm.initString = copyString("init", 4);
 
-    vm.code = NULL;
-    vm.nextCode = NULL;
-    vm.codeEnd = NULL;
+    initCode(&vm.code);
 }
 
 void freeVM()

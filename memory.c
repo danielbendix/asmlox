@@ -3,6 +3,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
+#include "code.h"
 
 #include <sys/mman.h>
 #include <errno.h>
@@ -194,8 +195,8 @@ static void freeObject(Obj *object)
 
 static void walkStack() 
 {
-    void *codeStart = vm.code;
-    void *codeEnd = vm.codeEnd;
+    void *codeStart = vm.code.start;
+    void *codeEnd = vm.code.end;
     void *mainReturn = vm.mainReturnAddress;
 
     void *stack;
@@ -279,6 +280,7 @@ void collectGarbage()
     markRoots();
     traceReferences();
     tableRemoveWhite(&vm.strings);
+    codeRemoveWhite(&vm.code);
     sweep();
 
     vm.nextGC = vm.bytesAllocated * GC_HEAP_GROW_FACTOR;

@@ -4,6 +4,7 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "code.h"
 
 #include <setjmp.h>
 
@@ -27,11 +28,7 @@ typedef struct {
     int grayCapacity;
     Obj **grayStack;
 
-    /// Pointer to the beginning of the code segment.
-    /// Used to detect if a frame belongs to JIT or native function.
-    void *code;
-    void *codeEnd;
-    void *nextCode;
+    Code code;
 
     // Using setjmp/longjmp guarantees complete restoration of state,
     // But time and memory usage could be better.
