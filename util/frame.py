@@ -6,6 +6,7 @@ from typing import Optional
 
 import lldb
 
+# import using: command script import util/frame.py
 
 class LoxValueType(IntEnum):
     VAL_NIL = 0

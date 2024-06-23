@@ -8,6 +8,7 @@ from operator import methodcaller
 
 import lldb
 
+# import using: command script import util/bt.p
 
 class LoxDebugException(Exception):
     message: str
