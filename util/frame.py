@@ -1,18 +1,12 @@
-from enum import IntEnum
-import struct
 import shlex
 
 from typing import Optional
 
+from .value import describe_lox_value
+
 import lldb
 
 # import using: command script import util/frame.py
-
-class LoxValueType(IntEnum):
-    VAL_NIL = 0
-    VAL_BOOL = 1
-    VAL_NUMBER = 2
-    VAL_OBJ = 3
 
 
 class LoxDebugException(Exception):
@@ -46,27 +40,6 @@ def print_lox_frame(
     debugger, frame_index: Optional[int] = None, thread_index: Optional[int] = None
 ):
     process = get_process(debugger)
-
-    def read_unsigned(address, count: int):
-        nonlocal process
-        error = lldb.SBError()
-        result = process.ReadUnsignedFromMemory(address, count, error)
-        check_error(error)
-        return result
-
-    def read_pointer(address):
-        nonlocal process
-        error = lldb.SBError()
-        result = process.ReadPointerFromMemory(address, error)
-        check_error(error)
-        return result
-
-    def read_data(address, count: int):
-        nonlocal process
-        error = lldb.SBError()
-        result = process.ReadMemory(address, count, error)
-        check_error(error)
-        return result
 
     if thread_index is not None:
         if thread_index >= process.GetNumThreads():
@@ -103,29 +76,13 @@ def print_lox_frame(
 
     pointer = first
     while pointer >= last:
+        debug_string_header = f"{pointer:#0{18}x}: "
         try:
-            value_type = LoxValueType(read_unsigned(pointer, 4))
+            value_description = describe_lox_value(process, pointer)
+        except Exception:
+            value_description = "[UNABLE TO READ]"
 
-            debug_string_header = f"{pointer:#0{18}x}: "
-
-            value_description = ""
-            if value_type == LoxValueType.VAL_NIL:
-                value_description = "nil"
-            elif value_type == LoxValueType.VAL_BOOL:
-                value_description = "true" if read_unsigned(pointer + 8, 1) else "false"
-            elif value_type == LoxValueType.VAL_NUMBER:
-                value_description = str(
-                    struct.unpack("@d", read_data(pointer + 8, 8))[0]
-                )
-            elif value_type == LoxValueType.VAL_OBJ:
-                object_pointer = read_pointer(pointer + 8)
-                value_description = "OBJECT " + hex(object_pointer)
-
-            print(debug_string_header + value_description)
-
-        except LoxDebugException:
-            pass
-
+        print(debug_string_header + value_description)
         pointer -= 16
 
 

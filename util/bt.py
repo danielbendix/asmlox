@@ -6,9 +6,12 @@ from typing import Optional
 from itertools import islice
 from operator import methodcaller
 
+from util.value import describe_lox_value
+
 import lldb
 
 # import using: command script import util/bt.p
+
 
 class LoxDebugException(Exception):
     message: str
@@ -20,19 +23,19 @@ class LoxDebugException(Exception):
 class Value:
 
     def __init__(self, sb_value):
+        if not sb_value.IsValid():
+            raise ValueError("Attempting to create Value with invalid SBValue.")
         self.value = sb_value
 
     def __getitem__(self, key):
         if isinstance(key, str):
             result = self.value.GetChildMemberWithName(key)
             if not result.IsValid():
-                raise LoxDebugException(f"Unable to get child member for key '{key}'.")
+                raise KeyError(f"Unable to get child member for key '{key}'.")
         elif isinstance(key, int):
             result = self.value.GetChildAtIndex(key)
             if not result.IsValid():
-                raise LoxDebugException(
-                    f"Unable to get child member for index '{key}'."
-                )
+                raise IndexError(f"Unable to get child member at index {key}.")
         else:
             raise TypeError("Key must be either an int or a str")
         return Value(result)
@@ -85,6 +88,7 @@ class Value:
 class Function:
     start: int
     size: int
+    arity: int
     name: str
     value: Value
 
@@ -131,14 +135,17 @@ def print_lox_backtrace(debugger, limit: Optional[int] = None):
     for i in range(functionCount):
         function = functionPointer.index(i).dereference()
         name = function["name"]
+
         if name.pointer == 0:
             name = "<lox script>"
         else:
             name = name["chars"].string
+
         functions.append(
             Function(
                 function["chunk"]["code"].pointer,
                 function["chunk"]["count"].uint32,
+                function["arity"].uint32,
                 name,
                 function,
             )
@@ -162,8 +169,17 @@ def print_lox_backtrace(debugger, limit: Optional[int] = None):
             function = find_function(frame.GetPC())
             name = "[UNKNOWN]" if function is None else function.name
             if function is not None:
+                if function.arity == 0:
+                    arg_string = "()"
+                else:
+                    fp = frame.GetFP()
+                    args = [
+                        describe_lox_value(process, pointer)
+                        for pointer in range(fp + function.arity * 16, fp, -16)
+                    ]
+                    arg_string = f'({", ".join(args)})'
                 print(
-                    f"frame #{frame.GetFrameID()}: {frame.GetPC():#0{18}x} jit`{name} + {frame.GetPC() - function.start}"
+                    f"frame #{frame.GetFrameID()}: {frame.GetPC():#0{18}x} jit`{name}{arg_string} + {frame.GetPC() - function.start}"
                 )
             else:
                 print(f"frame #{frame.GetFrameID()}: {frame.GetPC():#0{18}x} [UNKNOWN]")
